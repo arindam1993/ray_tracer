@@ -25,20 +25,24 @@ public class Ray{
     return this;
   }
   
-  public Ray refract(PVector normal, PVector hitPt, SceneObject hitObject){
-    //Refract Once
-    this.origin = hitPt.add(normal.copy().mult(0.1));
-    this.direction = Refract(this.direction, normal, ((SpecularMaterial)(hitObject.getMaterial())).getRefractiveIndex());
+  public Ray refract(SceneObject obj){
+    ////Refract Once
+    //this.origin = hitPt.add(normal.copy().mult(0.1));
+    //this.direction = Refract(this.direction, normal, ((SpecularMaterial)(hitObject.getMaterial())).getRefractiveIndex());
     
-    //Intersect with the other side
-    PVector result = new PVector(0,0,0);
-    hitObject.intersectRay(this, result);
+    ////Intersect with the other side
+    //PVector result = new PVector(0,0,0);
+    //hitObject.intersectRay(this, result);
     
-    PVector newNormal = hitObject.getSurfaceNormalAtPt(result);
-    this.origin = result;
+    //PVector newNormal = hitObject.getSurfaceNormalAtPt(result);
+    //this.origin = result;
     
-    //refract again
-    this.direction = Refract(this.direction, newNormal.copy().mult(-1) , 1 / ((SpecularMaterial)(hitObject.getMaterial())).getRefractiveIndex());
+    ////refract again
+    //this.direction = Refract(this.direction, newNormal.copy().mult(1) , 1 / ((SpecularMaterial)(hitObject.getMaterial())).getRefractiveIndex());
+    
+    Ray refract = obj.getRefractedRay(this);
+    this.origin = refract.origin;
+    this.direction = refract.direction;
     return this;
   }
   

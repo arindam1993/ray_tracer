@@ -10,6 +10,7 @@ public interface SceneObject{
   public void setMaterial(Material mat);
   
   public PVector getSurfaceNormalAtPt(PVector pt);
+  public Ray getRefractedRay(Ray incidentRay);
   
   
 }
@@ -84,40 +85,75 @@ public class Sphere implements SceneObject{
     if ( D < 0 ) { return false ; }
     
     float t1 = (-b - sqrt(D))/ 2*a;
-    //float t2 = (-b + sqrt(D))/ 2*a;
+    float t2 = (-b + sqrt(D))/ 2*a;
     
     PVector r1 = new PVector(x0 + t1*dx, y0 + t1*dy, z0 + t1*dz);
-    //PVector r2 = new PVector(x0 + t2*dx, y0 + t2*dy, z0 + t2*dz);
+    PVector r2 = new PVector(x0 + t2*dx, y0 + t2*dy, z0 + t2*dz);
     
     PVector toR1 = PVector.sub(r1, ray.origin);
-    //PVector toR2 = PVector.sub(r2, ray.origin);
+    PVector toR2 = PVector.sub(r2, ray.origin);
     
     ////Check if intersection is in ray direction
-    if( toR1.dot(ray.direction) < 0 ) return false;
-      
-    //return r2 since s1 is in opposite direction of ray
-    // result.set(r2.x, r2.y, r2.z);
-      
-    // println("r1 was opposite");
-    //}else if( toR2.dot(ray.direction) < 0 ) {
-      
-    // //Similarly return the other point
-    // result.set(r1.x, r1.y, r1.z);
-    // println("r2 was opposite");
-    //}
-    ////When both are positive
-    //else {
+    if(toR1.dot(ray.direction)  > 0  && toR2.dot(ray.direction) > 0)  {
       
     //  //Pick the closest
-    //  if( ray.origin.dist(r1) <= ray.origin.dist(r2)) result.set(r1.x, r1.y, r1.z);
-    //   result.set(r2.x, r2.y, r2.z);
-    //}
+     if( ray.origin.dist(r1) <= ray.origin.dist(r2)) result.set(r1.x, r1.y, r1.z);
+     else  result.set(r2.x, r2.y, r2.z);
+    }
+    else {
+     
+    return false;
+  }
+    ////When both are positive
+    
      result.set(r1.x, r1.y, r1.z);
     return true;
     
   }
   
-
+  
+  public Ray getRefractedRay(Ray incidentRay){
+    float rIndex = ((SpecularMaterial)(this.mat)).getRefractiveIndex();
+    PVector firstHit = new PVector(0,0,0);
+    this.intersectRay(incidentRay, firstHit);
+    
+    PVector newDir = Refract(incidentRay.direction, this.getSurfaceNormalAtPt(firstHit), rIndex);
+    
+    Ray firstRefraction = new Ray(firstHit, newDir.normalize());
+    PVector nextHit = fartherHit(firstRefraction );
+    PVector escapeDir = Refract(nextHit, this.getSurfaceNormalAtPt(nextHit).copy().mult(-1), 1/rIndex);
+    
+    return new Ray(nextHit, escapeDir.normalize());
+  
+  }
+  
+  private PVector fartherHit(Ray ray){
+  
+     float dx = ray.direction.x;
+    float dy = ray.direction.y;
+    float dz = ray.direction.z;
+    
+    float x0 = ray.origin.x;
+    float y0 = ray.origin.y;
+    float z0 = ray.origin.z;
+    
+    float cx = this.position.x;
+    float cy = this.position.y;
+    float cz = this.position.z;
+    
+    float a = dx*dx + dy*dy + dz*dz;
+    float b = 2*dx*(x0-cx) +  2*dy*(y0-cy) +  2*dz*(z0-cz);
+    float c = cx*cx + cy*cy + cz*cz + x0*x0 + y0*y0 + z0*z0 - 2*(cx*x0 + cy*y0 + cz*z0) - this.radius*this.radius;
+    float D = b*b - 4*a*c;
+    float t1 = (-b - sqrt(D))/ 2*a;
+    float t2 = (-b + sqrt(D))/ 2*a;
+    
+    PVector r1 = new PVector(x0 + t1*dx, y0 + t1*dy, z0 + t1*dz);
+    PVector r2 = new PVector(x0 + t2*dx, y0 + t2*dy, z0 + t2*dz);
+    
+    if( ray.origin.dist(r1) > ray.origin.dist(r2)) return r1;
+     else  return r2;
+  }
   
   
   

@@ -4,8 +4,8 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-int screen_width = 300;
-int screen_height = 300;
+int screen_width = 1000;
+int screen_height = 1000;
 
 // global matrix values
 PMatrix3D global_mat;
@@ -14,7 +14,7 @@ Scene scene;
 // Some initializations for the scene.
 
 void setup() {
-  size (300, 300, P3D);  // use P3D environment so that matrix commands work properly
+  size (1000, 1000, P3D);  // use P3D environment so that matrix commands work properly
   noStroke();
   colorMode (RGB, 1.0);
   background (0, 0, 0);

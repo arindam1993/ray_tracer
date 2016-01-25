@@ -90,7 +90,7 @@ public class Scene{
 
         RayTraceReturn ret = RayTrace(ray,scene,null,true, 0);
         
-        if( ret.depth < ZBuffer[w][h]){
+        if( ret.depth <= ZBuffer[w][h]){
           set(int(w),int(h), ret.pixColor.getPColor());
           ZBuffer[w][h] = ret.depth;
         }

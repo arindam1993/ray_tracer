@@ -36,35 +36,28 @@ public class RayTraceReturn{
 
 public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject , boolean isPrimaryRay, int bounceCt){
   float minDepth = 999999.0f;
-  boolean prevRendered = false;
   RGB pixColor =new RGB(0,0,0);
   RGB retColor = new RGB(0,0,0);
   retColor.copyTo(scene.getBackground());
   
-  RayTraceReturn toRet= new RayTraceReturn(retColor, 99999.0f);
+  RayTraceReturn toRet= new RayTraceReturn(retColor, 999999.0f);
   
   for(SceneObject obj : scene.getSceneObjects()){
     
    if( obj != emittedObject | isPrimaryRay){
      PVector interSectPt = new PVector(0,0,0);
      float depth = obj.getRayColor(pixColor, ray, scene, interSectPt);
-     if( depth < minDepth && depth > 0 ){
-          
-       //Render pixel only if it was not prevoisly rendered as non-background
-
-         minDepth = depth; 
+     if( depth < minDepth && depth > 0 ){   
          retColor.copyTo(pixColor);
-        
-         
-         
-         
+          toRet.depth = depth;
+          minDepth = depth;
          //Recurse
          if( obj.getMaterial().spawnsSecondary()){
             
             PVector surfaceNormal = obj.getSurfaceNormalAtPt(interSectPt);
             
             Ray reflected = ray.clone().reflect(surfaceNormal, interSectPt);
-            Ray refracted = ray.clone().refract(surfaceNormal, interSectPt, obj);
+            Ray refracted = ray.clone().refract(obj);
            
             RayTraceReturn reflectedColor = RayTrace(reflected, scene, obj, false, bounceCt);
             RayTraceReturn refractedColor = RayTrace(refracted, scene, obj, false, bounceCt);
@@ -72,7 +65,7 @@ public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject ,
             
             retColor.add(reflectedColor.pixColor.mult(((SpecularMaterial)(obj.getMaterial())).getKRefl()));
             retColor.add(refractedColor.pixColor.mult(((SpecularMaterial)(obj.getMaterial())).getKTrans()));
-            toRet.depth = depth;
+            
          }
 
       }
