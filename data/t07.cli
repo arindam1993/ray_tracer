@@ -1,28 +1,57 @@
-# refractive spheres
+# lots of spheres
 
 fov 60
-point_light 0 5 5 1 1 1
-background 0 0 0
+background 0.2 0.2 1
+point_light  3 4  0  1 1 1
 
-# diffuse sphere in background
+# these two triangles acts as a ground plane
 
-diffuse   0.3 0.3 0.8   0.1 0.1 0.2
-sphere 1.5  0 0 -7
+diffuse  .8 .8 .8  .2 .2 .2
 
-# four refractive spheres in front (different refractive indices)
+begin
+vertex -100 -1 -100
+vertex  100 -1 -100
+vertex  100 -1  100
+end
 
-shiny  0.1 0 0  0 0 0  .7 .7 .7  20  0  0.8 1.0
-sphere 0.6   1 0 -4
+begin
+vertex  100 -1  100
+vertex -100 -1  100
+vertex -100 -1 -100
+end
 
-shiny  0.1 0 0  0 0 0  .7 .7 .7  20  0  0.8 1.05
-sphere 0.6  0 1 -4
+# here come the rings of spheres, stacked on one another
 
-shiny  0.1 0 0  0 0 0  .7 .7 .7  20  0  0.8 1.2
-sphere 0.6  -1 0 -4
+push
 
-shiny  0.1 0 0  0 0 0  .7 .7 .7  20  0  0.8 1.6
-sphere 0.6  0 -1 -4
+translate 0 -0.8 -6
+read sphere_ring.cli
 
+translate 0 0.3 0
+rotate 5 0 1 0
+read sphere_ring.cli
 
+translate 0 0.3 0
+rotate 5 0 1 0
+read sphere_ring.cli
+
+translate 0 0.3 0
+rotate 5 0 1 0
+read sphere_ring.cli
+
+translate 0 0.3 0
+rotate 5 0 1 0
+read sphere_ring.cli
+
+translate 0 0.3 0
+rotate 5 0 1 0
+read sphere_ring.cli
+
+translate 0 0.3 0
+rotate 5 0 1 0
+read sphere_ring.cli
+
+pop
 
 write t07.png
+

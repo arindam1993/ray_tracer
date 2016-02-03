@@ -14,7 +14,7 @@ Scene scene;
 // Some initializations for the scene.
 
 void setup() {
-  size (1000, 1000, P3D);  // use P3D environment so that matrix commands work properly
+  size (300, 300, P3D);  // use P3D environment so that matrix commands work properly
   noStroke();
   colorMode (RGB, 1.0);
   background (0, 0, 0);
@@ -29,6 +29,7 @@ void setup() {
   
   scene = new Scene();
   initZbuffer();
+  loadPixels();
 }
 
 // Press key 1 to 9 and 0 to run different test cases.
@@ -62,6 +63,9 @@ void interpreter(String filename) {
   if (str == null) println("Error! Failed to read the file.");
   
   Material currentMaterial = new DiffuseMaterial(new RGB(1.0,1.0,1.0), new RGB(1.0,1.0,1.0));   
+  
+  SceneObject currentPolygon = new Polygon();;
+  
   initZbuffer();
   if (scene != null ) scene.clear();
  
@@ -162,6 +166,20 @@ void interpreter(String filename) {
       float x1 = float(token[3]);
       float y1 = float(token[4]);
       rect(x0, screen_height-y1, x1-x0, y1-y0);
+    }else if(token[0].equals("begin")){
+      
+      currentPolygon = new Polygon();
+    }else if(token[0].equals("vertex")){
+      float x = float(token[1]);
+      float y = float(token[2]);
+      float z = float(token[3]);
+
+      ((Polygon)(currentPolygon)).addVertex(new PVector(x,y,z));
+    }else if( token[0].equals("end") ){
+    
+      currentPolygon.setMaterial(currentMaterial);
+      println(currentPolygon);
+      scene.addObject(currentPolygon);
     }
     else if (token[0].equals("write")) {
       // save the current image to a .png file

@@ -4,7 +4,7 @@ public interface SceneObject{
   public boolean intersectRay(Ray ray, PVector result); 
   public float getRayColor(RGB retColor, Ray ray, Scene scene, PVector retIntersectPt);
   public PVector getPosition();
-  public void setPosition(PVector pos);
+
   
   public Material getMaterial();
   public void setMaterial(Material mat);
@@ -15,7 +15,126 @@ public interface SceneObject{
   
 }
 
+public class Polygon implements SceneObject{
+  
+ PVector[] vertices;
+ int numVertices;
+ Material mat;
+  
+ public Polygon(){
+   vertices = new PVector[3];
+   numVertices = 0;
+ }
+  
+ public void addVertex(PVector v){
+   if ( numVertices < 3 ){
+     vertices[numVertices] = v;
+     numVertices++;
+   }
+ }
+  
+ 
+ public boolean intersectRay(Ray ray, PVector result){
+   
+   
+   //Ray is almost parallel
+   PVector N = getSurfaceNormalAtPt(new PVector(0,0,0));
+   if( abs(ray.direction.dot(N)) < 0.01f) return false;
+   
+   float D = N.dot(vertices[0]);
+   float t =  (N.dot(ray.origin) + D)/N.dot(ray.direction);
+   
+   //Triangle is behind
+   if ( t < 0 ) return false;
+   
+   PVector intersectPt = PVector.add(ray.origin, ray.direction.copy().normalize().mult(t));
 
+   PVector C;
+   
+   PVector e1 = PVector.sub(vertices[1], vertices[0]);
+   PVector vp0 = PVector.sub(intersectPt, vertices[0]);
+   
+   C = e1.cross(vp0);
+   print("NdotC:"+C);
+   if ( N.dot(C) > 0) return false;
+   
+   PVector e2 = PVector.sub(vertices[2], vertices[1]);
+   PVector vp1 = PVector.sub(intersectPt, vertices[1]);
+   
+   C = e2.cross(vp1);
+   if ( N.dot(C) > 0) return false;
+   
+   PVector e3 = PVector.sub(vertices[0], vertices[2]);
+   PVector vp2 = PVector.sub(intersectPt, vertices[2]);
+   
+    C = e3.cross(vp2);
+   if ( N.dot(C) > 0) return false;
+   
+   
+   result.set(intersectPt.x, intersectPt.y, intersectPt.z);
+   
+   return true;
+  
+   
+ }
+ 
+ public float getRayColor(RGB retColor, Ray ray, Scene scene, PVector retIntersectPt){
+   PVector intersectPt = new PVector(0,0,0);
+    
+    if( this.intersectRay(ray, intersectPt) ){
+      PVector surfNormal = this.getSurfaceNormalAtPt(intersectPt);
+      retColor.copyTo(this.mat.getRenderColor(intersectPt, surfNormal, scene, ray, this));
+      
+      retIntersectPt.set(intersectPt.x, intersectPt.y, intersectPt.z);
+     print("Hit and color " + intersectPt);
+      
+      return PVector.sub(intersectPt, ray.origin).mag();
+    }else{
+    retColor.copyTo(scene.getBackground());
+    return -1.0f;
+    }
+ }
+ 
+ public PVector getPosition(){
+   PVector center = new PVector(0,0,0);
+   
+   for( int i=0;i<3 ; i++){
+     center.add(vertices[i]);
+   }
+   return center;
+   
+ }
+  
+ public PVector getSurfaceNormalAtPt(PVector pt){
+   PVector vec1 = PVector.sub(vertices[1], vertices[0]);
+   PVector vec2 = PVector.sub(vertices[2], vertices[0]);
+   return vec1.cross(vec2).normalize().mult(-1);
+ }
+  
+ public void setMaterial(Material mat){
+   this.mat = mat;
+ }
+ public Material getMaterial(){
+   return this.mat;
+ }
+  
+  
+  public Ray getRefractedRay(Ray incidentRay){
+  
+    float rIndex = ((SpecularMaterial)(this.mat)).getRefractiveIndex();
+    PVector f =new PVector(0,0,0);
+    return new Ray(incidentRay.origin, Refract(incidentRay.direction, getSurfaceNormalAtPt(f),rIndex));
+  }
+  
+  
+  public String toString(){
+    return "Polygon: { v0: "+vertices[0]+", v1: "+vertices[1]+", v2: "+vertices[2] + ", Material: "+ mat+"}";
+  }
+  
+  
+  
+  
+}
 
 
 public class Sphere implements SceneObject{

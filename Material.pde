@@ -25,6 +25,11 @@ public class DiffuseMaterial implements Material{
      float factor = surfaceNormal.dot(toLight);
      if ( factor < 0 ) factor = 0;
      finalColor.add(diffuseColor.clone().dot(l.getColor()).mult(factor));
+     
+     
+     RGB shadowResult = isShadow(intersectPt, toLight, scene, obj);
+     finalColor.dot(shadowResult);
+     
      finalColor.add(ambientColor.clone().dot(l.getColor()));
     }
     return finalColor;
@@ -68,11 +73,14 @@ public class SpecularMaterial implements Material {
     
     RGB specComp = new RGB(0,0,0);
     for(Light l : scene.getLights()){
-      PVector R = Reflect(PVector.sub(l.getPosition(), intersectPt).normalize(), surfaceNormal);
+      PVector toLight = PVector.sub(l.getPosition(), intersectPt).normalize();
+      PVector R = Reflect(toLight, surfaceNormal);
       float ref = Math.max(0, R.dot(ray.direction.copy().mult(-1)));
       float factor = pow(ref, specExp);
      
       specComp.add(specColor.clone().mult(factor));
+      
+      specComp.dot(isShadow(intersectPt, toLight, scene, obj));
     }
  
     
