@@ -13,6 +13,9 @@ public interface SceneObject{
   public Ray getRefractedRay(Ray incidentRay);
   
   
+  public void transform(PMatrix3D t);
+  
+  
 }
 
 public class Polygon implements SceneObject{
@@ -55,7 +58,7 @@ public class Polygon implements SceneObject{
    PVector vp0 = PVector.sub(intersectPt, vertices[0]);
    
    C = e1.cross(vp0);
-   print("NdotC:"+C);
+   //print("NdotC:"+C);
    if ( N.dot(C) > 0) return false;
    
    PVector e2 = PVector.sub(vertices[2], vertices[1]);
@@ -83,10 +86,14 @@ public class Polygon implements SceneObject{
     
     if( this.intersectRay(ray, intersectPt) ){
       PVector surfNormal = this.getSurfaceNormalAtPt(intersectPt);
+      
+      //Make polygons double sided
+      if( surfNormal.dot(intersectPt) > 0) surfNormal.mult(-1);
+      
       retColor.copyTo(this.mat.getRenderColor(intersectPt, surfNormal, scene, ray, this));
       
       retIntersectPt.set(intersectPt.x, intersectPt.y, intersectPt.z);
-     print("Hit and color " + intersectPt);
+     //print("Hit and color " + intersectPt);
       
       return PVector.sub(intersectPt, ray.origin).mag();
     }else{
@@ -106,9 +113,11 @@ public class Polygon implements SceneObject{
  }
   
  public PVector getSurfaceNormalAtPt(PVector pt){
-   PVector vec1 = PVector.sub(vertices[1], vertices[0]);
-   PVector vec2 = PVector.sub(vertices[2], vertices[0]);
-   return vec1.cross(vec2).normalize().mult(-1);
+   PVector vec1 = PVector.sub(vertices[2], vertices[0]);
+   PVector vec2 = PVector.sub(vertices[1], vertices[0]);
+   PVector res1=  vec1.cross(vec2).normalize().mult(1);
+   
+   return res1;
  }
   
  public void setMaterial(Material mat){
@@ -124,6 +133,17 @@ public class Polygon implements SceneObject{
     float rIndex = ((SpecularMaterial)(this.mat)).getRefractiveIndex();
     PVector f =new PVector(0,0,0);
     return new Ray(incidentRay.origin, Refract(incidentRay.direction, getSurfaceNormalAtPt(f),rIndex));
+  }
+  
+  
+  public void transform(PMatrix3D t){
+  
+    for( int i=0 ; i<vertices.length ; i++){
+      PVector vertex = vertices[i];
+      PVector transformedVertex = new PVector(0,0,0);
+      
+      vertices[i] = t.mult(vertex, transformedVertex);
+    }
   }
   
   
@@ -272,6 +292,17 @@ public class Sphere implements SceneObject{
     
     if( ray.origin.dist(r1) > ray.origin.dist(r2)) return r1;
      else  return r2;
+  }
+  
+  
+  public void transform(PMatrix3D t){
+
+    float scale = t.m33;
+    
+    PVector result = new PVector(0,0,0);
+    
+    this.position = t.mult(this.position, result);
+    this.radius*=scale;
   }
   
   

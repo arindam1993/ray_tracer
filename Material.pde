@@ -24,14 +24,18 @@ public class DiffuseMaterial implements Material{
      PVector toLight = PVector.sub(l.getPosition(), intersectPt).normalize();
      float factor = surfaceNormal.dot(toLight);
      if ( factor < 0 ) factor = 0;
-     finalColor.add(diffuseColor.clone().dot(l.getColor()).mult(factor));
+     
+     RGB currColor = diffuseColor.clone().dot(l.getColor()).mult(factor);
+     
      
      
      RGB shadowResult = isShadow(intersectPt, toLight, scene, obj);
-     finalColor.dot(shadowResult);
+     currColor.dot(shadowResult);
+     finalColor.add(currColor);
      
      finalColor.add(ambientColor.clone().dot(l.getColor()));
     }
+    
     return finalColor;
   
   }

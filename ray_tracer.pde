@@ -11,6 +11,7 @@ int screen_height = 1000;
 PMatrix3D global_mat;
 float[] gmat = new float[16];  // global matrix values
 Scene scene;
+MatrixStack matStack;
 // Some initializations for the scene.
 
 void setup() {
@@ -30,11 +31,24 @@ void setup() {
   scene = new Scene();
   initZbuffer();
   loadPixels();
+  
+  matStack = new MatrixStack();
 }
 
 // Press key 1 to 9 and 0 to run different test cases.
 
+  Material currentMaterial ;   
+  
+  SceneObject currentPolygon ;
+
 void keyPressed() {
+  
+  currentMaterial = new DiffuseMaterial(new RGB(1.0,1.0,1.0), new RGB(1.0,1.0,1.0));   
+  currentPolygon = new Polygon();
+  initZbuffer();
+  if (scene != null ) scene.clear();
+  matStack = new MatrixStack();
+  
   switch(key) {
     case '1':  interpreter("t01.cli"); break;
     case '2':  interpreter("t02.cli"); break;
@@ -61,13 +75,7 @@ void interpreter(String filename) {
   
   String str[] = loadStrings(filename);
   if (str == null) println("Error! Failed to read the file.");
-  
-  Material currentMaterial = new DiffuseMaterial(new RGB(1.0,1.0,1.0), new RGB(1.0,1.0,1.0));   
-  
-  SceneObject currentPolygon = new Polygon();;
-  
-  initZbuffer();
-  if (scene != null ) scene.clear();
+
  
   for (int i=0; i<str.length; i++) {
     
@@ -149,6 +157,8 @@ void interpreter(String filename) {
       
       SceneObject obj = new Sphere(pos,R,currentMaterial);
       
+      obj.transform(matStack.top());
+      
       scene.addObject(obj);
     }
     else if (token[0].equals("read")) {  // reads input from another file
@@ -178,8 +188,30 @@ void interpreter(String filename) {
     }else if( token[0].equals("end") ){
     
       currentPolygon.setMaterial(currentMaterial);
-      println(currentPolygon);
+      
+      currentPolygon.transform(matStack.top());
+      
       scene.addObject(currentPolygon);
+    }else if ( token[0].equals("push") ){
+      matStack.push();
+    }else if ( token[0].equals("pop") ){
+      matStack.pop();
+    }else if ( token[0].equals("translate") ){
+      float x = float(token[1]);
+      float y = float(token[2]);
+      float z = float(token[3]);
+      matStack.translateTop(x,y,z);
+    }else if ( token[0].equals("rotate") ){
+      float angle = float(token[1]) * PI/180;
+      float x = float(token[2]);
+      float y = float(token[3]);
+      float z = float(token[4]);
+      matStack.rotateTop(angle,x,y,z);
+    }else if ( token[0].equals("scale") ){
+      float x = float(token[1]);
+      float y = float(token[2]);
+      float z = float(token[3]);
+      matStack.scaleTop(x,y,z);
     }
     else if (token[0].equals("write")) {
       // save the current image to a .png file
