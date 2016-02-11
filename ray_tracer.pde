@@ -229,4 +229,8 @@ void draw() {
 // when mouse is pressed, print the cursor location
 void mousePressed() {
   println ("mouse: " + mouseX + " " + mouseY);
+  Ray ray = new Ray(new PVector(0,0,0), new PVector(0,0,-1));
+  ray = getEyeRay(ray,mouseX,mouseY);
+  RayTrace(ray,scene,null,true,0,true);
+  
 }

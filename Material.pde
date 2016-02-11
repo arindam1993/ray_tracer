@@ -1,7 +1,7 @@
 //Base class for differnt types of material
 public interface Material{
   //Different implementations of materials will use different getRenderColor()
-  public RGB getRenderColor(PVector intersectPt, PVector surfaceNormal, Scene scene, Ray ray, SceneObject obj);
+  public RGB getRenderColor(PVector intersectPt, PVector surfaceNormal, Scene scene, Ray ray, SceneObject obj, boolean DEBUG);
   public boolean spawnsSecondary();
 }
 
@@ -16,7 +16,7 @@ public class DiffuseMaterial implements Material{
     this.ambientColor = ambientColor;
   }
   
-  public RGB getRenderColor(PVector intersectPt, PVector surfaceNormal, Scene scene, Ray ray, SceneObject obj){
+  public RGB getRenderColor(PVector intersectPt, PVector surfaceNormal, Scene scene, Ray ray, SceneObject obj, boolean DEBUG){
     
     RGB finalColor = new RGB(0,0,0);
     
@@ -29,13 +29,14 @@ public class DiffuseMaterial implements Material{
      
      
      
-     RGB shadowResult = isShadow(intersectPt, toLight, scene, obj);
+     RGB shadowResult = isShadow(intersectPt, toLight, scene, obj, DEBUG);
      currColor.dot(shadowResult);
      finalColor.add(currColor);
      
-     finalColor.add(ambientColor.clone().dot(l.getColor()));
+     
     }
-    
+    finalColor.add(ambientColor);
+    //clone().dot(l.getColor()));
     return finalColor;
   
   }
@@ -71,9 +72,9 @@ public class SpecularMaterial implements Material {
 
   }
   
-  public RGB getRenderColor(PVector intersectPt, PVector surfaceNormal, Scene scene, Ray ray, SceneObject obj){
+  public RGB getRenderColor(PVector intersectPt, PVector surfaceNormal, Scene scene, Ray ray, SceneObject obj, boolean DEBUG){
     
-    RGB diffuseComp = baseMat.getRenderColor(intersectPt, surfaceNormal,scene, ray, obj);
+    RGB diffuseComp = baseMat.getRenderColor(intersectPt, surfaceNormal,scene, ray, obj, DEBUG);
     
     RGB specComp = new RGB(0,0,0);
     for(Light l : scene.getLights()){
@@ -84,7 +85,7 @@ public class SpecularMaterial implements Material {
      
       specComp.add(specColor.clone().mult(factor));
       
-      specComp.dot(isShadow(intersectPt, toLight, scene, obj));
+      specComp.dot(isShadow(intersectPt, toLight, scene, obj, DEBUG));
     }
  
     

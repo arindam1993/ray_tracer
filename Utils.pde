@@ -40,7 +40,7 @@ public class RayTraceReturn{
   }
 }
 
-public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject , boolean isPrimaryRay, int bounceCt){
+public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject , boolean isPrimaryRay, int bounceCt, boolean DEBUG){
   float minDepth = 999999.0f;
   RGB pixColor =new RGB(0,0,0);
   RGB retColor = new RGB(0,0,0);
@@ -52,29 +52,33 @@ public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject ,
     
    if( obj != emittedObject || isPrimaryRay){
      PVector interSectPt = new PVector(0,0,0);
-     float depth = obj.getRayColor(pixColor, ray, scene, interSectPt);
+     float depth = obj.getRayColor(pixColor, ray, scene, interSectPt, DEBUG);
      if( depth < minDepth && depth > 0 ){   
          retColor.copyTo(pixColor);
           toRet.depth = depth;
           minDepth = depth;
           
+          
+          if ( DEBUG ){
+            println( "Ray hit : " + obj);
+          }
          //Recurse
          
-         //if( obj.getMaterial().spawnsSecondary()){
+         if( obj.getMaterial().spawnsSecondary()){
             
-         //  PVector surfaceNormal = obj.getSurfaceNormalAtPt(interSectPt);
+          PVector surfaceNormal = obj.getSurfaceNormalAtPt(interSectPt);
             
-         //  Ray reflected = ray.clone().reflect(surfaceNormal, interSectPt);
-         //  Ray refracted = ray.clone().refract(obj);
+          Ray reflected = ray.clone().reflect(surfaceNormal, interSectPt);
+          Ray refracted = ray.clone().refract(obj);
            
-         //  RayTraceReturn reflectedColor = RayTrace(reflected, scene, obj, false, bounceCt);
-         //  RayTraceReturn refractedColor = RayTrace(refracted, scene, obj, false, bounceCt);
+          RayTraceReturn reflectedColor = RayTrace(reflected, scene, obj, false, bounceCt, false);
+          RayTraceReturn refractedColor = RayTrace(refracted, scene, obj, false, bounceCt, false);
             
             
-         //  retColor.add(reflectedColor.pixColor.mult(((SpecularMaterial)(obj.getMaterial())).getKRefl()));
-         //  retColor.add(refractedColor.pixColor.mult(((SpecularMaterial)(obj.getMaterial())).getKTrans()));
+          retColor.add(reflectedColor.pixColor.mult(((SpecularMaterial)(obj.getMaterial())).getKRefl()));
+          retColor.add(refractedColor.pixColor.mult(((SpecularMaterial)(obj.getMaterial())).getKTrans()));
             
-         //}
+         }
 
       }
     }
@@ -84,14 +88,17 @@ public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject ,
 
 }
 
-public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObject currObj){
+public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObject currObj, boolean DEBUG){
 
   Ray ray = new Ray(intersectPt, toLight.copy().normalize());
   for( SceneObject obj : scene.getSceneObjects()){
     if( obj != currObj){
       PVector res = new PVector(0,0,0);
-      if ( obj.intersectRay(ray, res)){
-      
+      if ( obj.intersectRay(ray, res, DEBUG) ){
+        if ( DEBUG ){
+          println("Shadow Ray hit: "+obj);
+          println("by Ray : " + ray + "at " + res);
+        }
         return new RGB(0,0,0);
       }
     }
@@ -99,6 +106,19 @@ public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObje
   
   return new RGB(1,1,1);
 
+}
+
+PVector _pixPt = new PVector(0,0,-1);
+public Ray getEyeRay(Ray ray, int w, int h){
+  
+  float px =(float)( w - (width/2)) * (2*scene.viewPlaneScale/width);
+  float py =(float)( h - (height/2)) *  (-1 * 2*scene.viewPlaneScale/height);
+  _pixPt.set(px,py,-1);
+        
+  //RGB pixColor = new RGB(0,0,0);
+  ray.setEndPoint(_pixPt);
+  
+  return ray;
 }
 
 

@@ -1,8 +1,8 @@
 //Baseclass for scene objects
 public interface SceneObject{
   
-  public boolean intersectRay(Ray ray, PVector result); 
-  public float getRayColor(RGB retColor, Ray ray, Scene scene, PVector retIntersectPt);
+  public boolean intersectRay(Ray ray, PVector result, boolean DEBUG); 
+  public float getRayColor(RGB retColor, Ray ray, Scene scene, PVector retIntersectPt, boolean DEBUG);
   public PVector getPosition();
 
   
@@ -37,21 +37,37 @@ public class Polygon implements SceneObject{
  }
   
  
- public boolean intersectRay(Ray ray, PVector result){
+ public boolean intersectRay(Ray ray, PVector result, boolean DEBUG){
    
    
    //Ray is almost parallel
    PVector N = getSurfaceNormalAtPt(new PVector(0,0,0));
+   
+   if ( DEBUG ) println("N: "+N);
+   
    if( abs(ray.direction.dot(N)) < 0.01f) return false;
    
    float D = N.dot(vertices[0]);
+   
+   if ( DEBUG ) println("D: "+D);
+   
    float t =  (N.dot(ray.origin) + D)/N.dot(ray.direction);
+   //print(t+" ");
+   
+   if ( DEBUG ) println("Ray Origin: "+N.dot(ray.origin));
    
    //Triangle is behind
-   if ( t < 0 ) return false;
+   if ( t < 0.01f ) return false;
+   
+   
+   if ( DEBUG ) println("t: "+t);
    
    PVector intersectPt = PVector.add(ray.origin, ray.direction.copy().normalize().mult(t));
-
+   
+   PVector planeVec = PVector.sub(vertices[0], intersectPt);
+   
+   if ( abs(planeVec.dot(N) ) > 0.01f) return false;
+    //print(intersectPt+" ");
    PVector C;
    
    PVector e1 = PVector.sub(vertices[1], vertices[0]);
@@ -73,6 +89,9 @@ public class Polygon implements SceneObject{
     C = e3.cross(vp2);
    if ( N.dot(C) > 0) return false;
    
+   PVector toPt = PVector.sub(intersectPt, ray.origin);
+   
+   if( toPt.dot(ray.direction) < 0 ) return false;
    
    result.set(intersectPt.x, intersectPt.y, intersectPt.z);
    
@@ -81,16 +100,16 @@ public class Polygon implements SceneObject{
    
  }
  
- public float getRayColor(RGB retColor, Ray ray, Scene scene, PVector retIntersectPt){
+ public float getRayColor(RGB retColor, Ray ray, Scene scene, PVector retIntersectPt, boolean DEBUG){
    PVector intersectPt = new PVector(0,0,0);
     
-    if( this.intersectRay(ray, intersectPt) ){
+    if( this.intersectRay(ray, intersectPt, false) ){
       PVector surfNormal = this.getSurfaceNormalAtPt(intersectPt);
       
       //Make polygons double sided
       if( surfNormal.dot(intersectPt) > 0) surfNormal.mult(-1);
       
-      retColor.copyTo(this.mat.getRenderColor(intersectPt, surfNormal, scene, ray, this));
+      retColor.copyTo(this.mat.getRenderColor(intersectPt, surfNormal, scene, ray, this, DEBUG));
       
       retIntersectPt.set(intersectPt.x, intersectPt.y, intersectPt.z);
      //print("Hit and color " + intersectPt);
@@ -169,12 +188,12 @@ public class Sphere implements SceneObject{
     this.mat = mat;
   }
   
-  public float getRayColor(RGB retColor,Ray ray,Scene scene, PVector retIntersectPt){
+  public float getRayColor(RGB retColor,Ray ray,Scene scene, PVector retIntersectPt, boolean DEBUG){
     PVector intersectPt = new PVector(0,0,0);
     
-    if( this.intersectRay(ray, intersectPt) ){
+    if( this.intersectRay(ray, intersectPt, false) ){
       PVector surfNormal = this.getSurfaceNormalAtPt(intersectPt);
-      retColor.copyTo(this.mat.getRenderColor(intersectPt, surfNormal, scene, ray, this));
+      retColor.copyTo(this.mat.getRenderColor(intersectPt, surfNormal, scene, ray, this, DEBUG));
       
       retIntersectPt.set(intersectPt.x, intersectPt.y, intersectPt.z);
       
@@ -202,7 +221,7 @@ public class Sphere implements SceneObject{
     return PVector.sub(pt, this.position).normalize();
   }
   
-  public boolean intersectRay(Ray ray, PVector result){
+  public boolean intersectRay(Ray ray, PVector result, boolean DEBUG){
     
     float dx = ray.direction.x;
     float dy = ray.direction.y;
@@ -254,7 +273,7 @@ public class Sphere implements SceneObject{
   public Ray getRefractedRay(Ray incidentRay){
     float rIndex = ((SpecularMaterial)(this.mat)).getRefractiveIndex();
     PVector firstHit = new PVector(0,0,0);
-    this.intersectRay(incidentRay, firstHit);
+    this.intersectRay(incidentRay, firstHit,false);
     
     PVector newDir = Refract(incidentRay.direction, this.getSurfaceNormalAtPt(firstHit), rIndex);
     

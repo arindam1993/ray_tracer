@@ -9,7 +9,7 @@ public class Scene{
   
   private PVector eye;
   private float fov;
-  private float viewPlaneScale;
+  public float viewPlaneScale;
   
   public Scene() {
     initDefaults();
@@ -73,7 +73,6 @@ public class Scene{
   
   public void render(){
 
-    PVector pixPt = new PVector(0,0,-1);
     Ray ray = new Ray(eye, new PVector(0,0,-1));
    
     
@@ -81,14 +80,9 @@ public class Scene{
     {
       for(int w = 0; w < width ; w++)
       {
-        float px =(float)( w - (width/2)) * (2*this.viewPlaneScale/width);
-        float py =(float)( h - (height/2)) *  (-1 * 2*this.viewPlaneScale/height);
-        pixPt.set(px,py,-1);
+        ray = getEyeRay(ray,w,h);
         
-        //RGB pixColor = new RGB(0,0,0);
-        ray.setEndPoint(pixPt);
-
-        RayTraceReturn ret = RayTrace(ray,scene,null,true, 0);
+        RayTraceReturn ret = RayTrace(ray,scene,null,true, 0, false);
         
         if( ret.depth <= ZBuffer[w][h] && ret.depth > 0){
           
