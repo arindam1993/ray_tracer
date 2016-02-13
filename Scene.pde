@@ -5,14 +5,18 @@ public class Scene{
   
   private ArrayList<SceneObject> objects;
   private ArrayList<Light> lights;
+  private ArrayList<Ray> _currPixelRays;
   private RGB bgColor;
+  public int numRays;
   
-  private PVector eye;
+  public PVector eye;
   private float fov;
   public float viewPlaneScale;
+  public float pixSize;
   
   public Scene() {
     initDefaults();
+    _currPixelRays = new ArrayList<Ray>();
   }
   
   public Scene(float fov,RGB bgColor){
@@ -42,7 +46,7 @@ public class Scene{
   
   public void setFOV(float fov){
     this.fov = fov * PI/180;
-    this.viewPlaneScale = tan(this.fov/2); 
+    this.viewPlaneScale = 2 *tan(this.fov/2); 
     
     println("View Plane Scale: "+this.viewPlaneScale);
   }
@@ -72,23 +76,42 @@ public class Scene{
   
   
   public void render(){
-
-    Ray ray = new Ray(eye, new PVector(0,0,-1));
-   
-    
+ 
     for(int h = 0; h < height ; h++)
     {
       for(int w = 0; w < width ; w++)
       {
-        ray = getEyeRay(ray,w,h);
-        
-        RayTraceReturn ret = RayTrace(ray,scene,null,true, 0, false);
-        
-        if( ret.depth <= ZBuffer[w][h] && ret.depth > 0){
-          
-          set(int(w),int(h), ret.pixColor.getPColor());
-          ZBuffer[w][h] = ret.depth;
+        boolean DEBUG = (w < 5) && (h <5);
+        _currPixelRays.clear();
+        getPixelRays(w,h,this.viewPlaneScale/width,_currPixelRays);
+        //ray = getEyeRay(ray,w,h);
+        RGB finalColor = new RGB(0,0,0);
+        float finalDepth = 999999;
+        int loopCt = 0;
+        for ( Ray r : _currPixelRays){
+          //print( r + " ");
+          RayTraceReturn ret = RayTrace(r,scene,null,true, 0, false);
+          if ( loopCt == 0){
+            finalDepth = ret.depth;
+           }
+           loopCt++;
+           if (DEBUG)
+             print( ret.pixColor + " " );
+          finalColor.add(ret.pixColor);
         }
+        
+        if ( DEBUG )
+         print( finalColor + " " );
+        finalColor.mult(1/float(loopCt));
+        if ( DEBUG )
+         print( finalColor + " " );
+        
+        if( finalDepth <= ZBuffer[w][h] && finalDepth > 0){
+          
+          set(int(w),int(h), finalColor.getPColor());
+          ZBuffer[w][h] = finalDepth;
+        }
+        
       }
     }
   }

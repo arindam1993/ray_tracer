@@ -212,6 +212,9 @@ void interpreter(String filename) {
       float y = float(token[2]);
       float z = float(token[3]);
       matStack.scaleTop(x,y,z);
+    }else if ( token[0].equals("rays_per_pixel")){
+      int num = int(token[1]);
+      scene.numRays = num;
     }
     else if (token[0].equals("write")) {
       // save the current image to a .png file

@@ -121,6 +121,44 @@ public Ray getEyeRay(Ray ray, int w, int h){
   return ray;
 }
 
+int getNearestSquareRoot( int n ){
+  return int(ceil(sqrt(n)));
+}
+
+void getPixelRays(int w, int h, float pixSize, ArrayList<Ray> toRetRays){
+  float gridSize = pixSize/getNearestSquareRoot(scene.numRays);
+  boolean DEBUG = (w < 5) && (h <5);
+  if (DEBUG)
+    println(" For " + w + " " + h + " " + gridSize);
+  
+  float px =(float)( w - (width/2)) * (pixSize);
+  float py =(float)( h - (height/2)) *  (-1 * pixSize);
+  for ( float offsetX = 0; offsetX < pixSize ; offsetX+= gridSize ){
+    for ( float offsetY = 0; offsetY < pixSize ; offsetY+= gridSize ) {
+      Ray ray = new Ray(scene.eye, new PVector(0,0,0));
+ 
+      float randXOffset = random(1) * gridSize;
+      float randYOffset = random(1) * gridSize;
+      
+      float _px=px +offsetX + randXOffset;
+      float _py=py +offsetY + randYOffset;
+      
+      //if (DEBUG)
+      //  print (" " + offsetX + " " + offsetY + ", ");
+      
+      _pixPt.set(_px,_py,-1);
+      ray.setEndPoint(_pixPt);
+      
+      toRetRays.add(ray);
+      
+      //print ( ray + " ");
+    }
+  }
+  if (DEBUG)
+    print("\n");
+
+}
+
 
 public PMatrix3D MakeIdentityMatrix(){
  return new PMatrix3D(1, 0, 0, 0,
