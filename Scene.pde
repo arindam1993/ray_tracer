@@ -89,22 +89,24 @@ public class Scene{
         float finalDepth = 999999;
         int loopCt = 0;
         for ( Ray r : _currPixelRays){
+          
+          r.setTimestamp(random(1));
           //print( r + " ");
           RayTraceReturn ret = RayTrace(r,scene,null,true, 0, false);
           if ( loopCt == 0){
             finalDepth = ret.depth;
            }
            loopCt++;
-           if (DEBUG)
-             print( ret.pixColor + " " );
+           //if (DEBUG)
+             //print( ret.pixColor + " " );
           finalColor.add(ret.pixColor);
         }
         
-        if ( DEBUG )
-         print( finalColor + " " );
+        //if ( DEBUG )
+         //print( finalColor + " " );
         finalColor.mult(1/float(loopCt));
-        if ( DEBUG )
-         print( finalColor + " " );
+        //if ( DEBUG )
+         //print( finalColor + " " );
         
         if( finalDepth <= ZBuffer[w][h] && finalDepth > 0){
           

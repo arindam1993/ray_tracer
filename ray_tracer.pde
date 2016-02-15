@@ -215,6 +215,27 @@ void interpreter(String filename) {
     }else if ( token[0].equals("rays_per_pixel")){
       int num = int(token[1]);
       scene.numRays = num;
+    }else if (token[0].equals("moving_sphere")){
+      float radius = float(token[1]);
+      
+      float x1 = float(token[2]);
+      float y1 = float(token[3]);  
+      float z1 = float(token[4]);
+      
+      float x2 = float(token[5]);
+      float y2 = float(token[6]);     
+      float z2 = float(token[7]);
+      
+      SceneObject movSphere =new MovingSphere(
+        new PVector(x1,y1,z1),
+        new PVector(x2,y2,z2),
+        radius,
+        currentMaterial
+      );
+      
+      movSphere.transform(matStack.top());
+      scene.addObject(movSphere);
+    
     }
     else if (token[0].equals("write")) {
       // save the current image to a .png file

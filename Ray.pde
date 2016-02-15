@@ -3,10 +3,12 @@ public class Ray{
   
   public PVector origin;
   public PVector direction;
+  private float timeStamp;
   
   public Ray(PVector origin, PVector direction){
     this.origin = origin;
     this.direction = direction;
+    timeStamp = 0;
     
   }
   
@@ -23,6 +25,10 @@ public class Ray{
     this.origin.set(hitPoint.x, hitPoint.y, hitPoint.z);
     
     return this;
+  }
+  
+  public void setTimestamp(float t){
+    this.timeStamp = t;
   }
   
   public Ray refract(SceneObject obj){

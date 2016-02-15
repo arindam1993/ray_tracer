@@ -218,7 +218,7 @@ public class Sphere implements SceneObject{
     return this.mat;
   }
   public PVector getSurfaceNormalAtPt(PVector pt){
-    return PVector.sub(pt, this.position).normalize();
+    return PVector.sub(pt, this.getPosition()).normalize();
   }
   
   public boolean intersectRay(Ray ray, PVector result, boolean DEBUG){
@@ -231,9 +231,11 @@ public class Sphere implements SceneObject{
     float y0 = ray.origin.y;
     float z0 = ray.origin.z;
     
-    float cx = this.position.x;
-    float cy = this.position.y;
-    float cz = this.position.z;
+    PVector pos = this.getPosition();
+    //print( pos);
+    float cx = pos.x;
+    float cy = pos.y;
+    float cz = pos.z;
     
     float a = dx*dx + dy*dy + dz*dz;
     float b = 2*dx*(x0-cx) +  2*dy*(y0-cy) +  2*dz*(z0-cz);
@@ -328,5 +330,57 @@ public class Sphere implements SceneObject{
   
   public String toString(){
     return "Sphere : { x:" + position.x + " y:" + position.y + " z:" + position.z + " R:" + radius +" Material :"+this.mat +" } ";
+  }
+}
+
+
+public class MovingSphere extends Sphere{
+
+  
+  PVector start;
+  PVector end;
+  
+  float lastTime;
+  public MovingSphere(PVector start, PVector end, float radius, Material m){
+    super(end,radius,m);
+    this.start = start;
+    this.end = end;  
+    lastTime = 0;
+  }
+  
+  public boolean intersectRay(Ray ray, PVector result, boolean DEBUG){
+    lastTime = ray.timeStamp;
+    //this.position = PVector.add( this.start ,PVector.sub(this.end, this.start).mult(ray.timeStamp));
+    
+   
+    return super.intersectRay(ray,result,DEBUG);
+  }
+  
+    //public PVector getSurfaceNormalAtPt(PVector pt){
+    //  this.position = PVector.add( this.start ,PVector.sub(this.end, this.start).mult(lastTime));
+    //  return super.getSurfaceNormalAtPt(pt);
+    //}
+  
+  
+  public PVector getPosition(){
+    return PVector.add( this.start ,PVector.sub(this.end, this.start).mult(lastTime));
+  
+  }
+  
+    public void transform(PMatrix3D t){
+
+    float scale = t.m33;
+    
+    PVector result1 = new PVector(0,0,0);
+    PVector result2 = new PVector(0,0,0);
+    
+    this.start = t.mult(this.start, result1);
+    this.end = t.mult(this.end, result2);
+    
+    this.radius*=scale;
+  }
+  
+   public String toString(){
+    return "Moving Sphere : { start: "+ start+", end: " + end + " R:" + radius +" Material :"+this.mat +" } ";
   }
 }
