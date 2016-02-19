@@ -33,6 +33,11 @@ void setup() {
   loadPixels();
   
   matStack = new MatrixStack();
+  
+  
+  //TESTS
+  
+  getRandomNormalizedSamples(50, new ArrayList<PVector>());
 }
 
 // Press key 1 to 9 and 0 to run different test cases.
@@ -103,7 +108,7 @@ void interpreter(String filename) {
         float(token[5]),
         float(token[6])
       );
-      Light lt = new Light(pos,col);
+      Light lt = new PointLight(pos,col);
       scene.addLight(lt);
     }
     else if (token[0].equals("diffuse")) {
@@ -236,8 +241,32 @@ void interpreter(String filename) {
       movSphere.transform(matStack.top());
       scene.addObject(movSphere);
     
-    }
-    else if (token[0].equals("write")) {
+    }else if( token[0].equals("disk_light") ){
+      
+      float x = float(token[1]);
+      float y = float(token[2]);
+      float z = float(token[3]);
+      
+      float radius = float(token[4]);
+      
+      float dx = float(token[5]);
+      float dy = float(token[6]);
+      float dz = float(token[7]);
+      
+      float r = float(token[8]);
+      float g = float(token[9]);
+      float b = float(token[10]);
+      
+      Light dl = new DiscLight(
+        new PVector(x,y,z),
+        radius,
+        new PVector(dx,dy,dz),
+        new RGB(r,g,b)
+       );
+       
+       scene.addLight(dl);
+      
+    }else if (token[0].equals("write")) {
       // save the current image to a .png file
       
       if(!filename.equals("rect_test.cli")) scene.render();

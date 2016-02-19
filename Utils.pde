@@ -88,6 +88,67 @@ public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject ,
 
 }
 
+public void getRandomNormalizedSamples(int numSamples, ArrayList<PVector> samples){
+  
+  samples.clear();
+  
+  int numSections = getNearestSquareRoot( numSamples );
+  float rectSize = 1/ float(numSections);
+  
+  for ( int y = 0 ; y < numSections; y++){
+    
+    for ( int x = 0 ; x < numSections ; x++) {
+      
+      float xSample = (float(x) * rectSize + random(1) * rectSize) - 0.5f;
+      float ySample = (float(y) * rectSize + random(1) * rectSize) - 0.5f;
+      
+      
+      if ( sqrt( xSample * xSample + ySample * ySample ) < 0.5f){
+        samples.add(new PVector(xSample, ySample, 0).normalize());
+      }
+      
+    }   
+  }
+}
+
+public PVector getRandomNonParalledVec(PVector vec){
+  PVector randVec = new PVector(random(1), random(1), random(1)).normalize();
+  
+  if ( randVec.dot(vec.copy().normalize()) > 0.9f ){
+    return getRandomNonParalledVec(vec);
+  }else{
+    return randVec;
+  }
+}
+
+public void getRadialSamplesInPlane(int numSamples,PVector center, PVector normal, float radius, ArrayList<PVector> samples){
+  getRandomNormalizedSamples(numSamples, samples);
+  PVector randVec = getRandomNonParalledVec(normal);
+  
+  PVector xBasis = normal.copy().cross(randVec).normalize();
+  PVector yBasis = xBasis.copy().cross(normal).normalize();
+  
+  println(xBasis);
+  println(yBasis);
+  
+  for ( PVector sample : samples){
+    float xSample = sample.x;
+    float ySample = sample.y;
+    
+    PVector xComp = xBasis.copy().mult(xSample * radius);
+    PVector yComp = yBasis.copy().mult(ySample * radius);
+    
+    PVector res = PVector.add(xComp, yComp).add(center);
+    println(res);
+    sample.set(res.x,res.y,res.z);
+  }
+  
+}
+
+
+
+
+
 public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObject currObj, boolean DEBUG){
 
   Ray ray = new Ray(intersectPt, toLight.copy().normalize());
@@ -137,8 +198,8 @@ void getPixelRays(int w, int h, float pixSize, ArrayList<Ray> toRetRays){
     for ( float offsetY = 0; offsetY < pixSize ; offsetY+= gridSize ) {
       Ray ray = new Ray(scene.eye, new PVector(0,0,0));
  
-      float randXOffset = random(1) * gridSize;
-      float randYOffset = random(1) * gridSize;
+      float randXOffset = 0;//random(1) * gridSize;
+      float randYOffset = 0;//random(1) * gridSize;
       
       float _px=px +offsetX + randXOffset;
       float _py=py +offsetY + randYOffset;
@@ -158,6 +219,9 @@ void getPixelRays(int w, int h, float pixSize, ArrayList<Ray> toRetRays){
     print("\n");
 
 }
+
+
+
 
 
 public PMatrix3D MakeIdentityMatrix(){

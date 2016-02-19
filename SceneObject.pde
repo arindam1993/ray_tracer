@@ -349,7 +349,7 @@ public class MovingSphere extends Sphere{
   }
   
   public boolean intersectRay(Ray ray, PVector result, boolean DEBUG){
-    lastTime = ray.timeStamp;
+    this.lastTime = ray.timeStamp;
     //this.position = PVector.add( this.start ,PVector.sub(this.end, this.start).mult(ray.timeStamp));
     
    

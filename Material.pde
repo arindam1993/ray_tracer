@@ -29,8 +29,9 @@ public class DiffuseMaterial implements Material{
      
      
      
-     RGB shadowResult = isShadow(intersectPt, toLight, scene, obj, DEBUG);
-     currColor.dot(shadowResult);
+     //RGB shadowResult = isShadow(intersectPt, toLight, scene, obj, DEBUG);
+     //currColor.dot(shadowResult);
+     l.getShadowColor(currColor,intersectPt,scene,obj,DEBUG);
      finalColor.add(currColor);
      
      
