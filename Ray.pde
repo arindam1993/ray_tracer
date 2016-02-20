@@ -56,6 +56,19 @@ public class Ray{
     return new Ray(this.origin.copy(), this.direction.copy());
   }
   
+  public void randomlyBlur(float lensRadius, float focalDistance){
+    float t = -1 * (focalDistance)/this.direction.z;
+    
+    PVector endPoint = PVector.add(this.origin, this.direction.copy().mult(t));
+    PVector randVec = new PVector(random(1) -0.5f, random(1) - 0.5f ,0).mult(lensRadius);
+   
+    this.origin = randVec;//(randVec.x, randVec.y, randVec.z);
+    //print(endPoint);
+    this.direction = PVector.sub(endPoint, randVec).normalize();
+    
+  
+  }
+  
   public String toString(){
     return "Ray: { origin: " + origin.x +" " + origin.y + " " + origin.z +" , direction: " + direction.x + " " + direction.y + " " + direction.z + " }";
   }

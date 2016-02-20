@@ -66,7 +66,7 @@ public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject ,
          
          if( obj.getMaterial().spawnsSecondary()){
             
-          PVector surfaceNormal = obj.getSurfaceNormalAtPt(interSectPt);
+        PVector surfaceNormal = obj.getSurfaceNormalAtPt(interSectPt);
             
           Ray reflected = ray.clone().reflect(surfaceNormal, interSectPt);
           Ray refracted = ray.clone().refract(obj);
@@ -99,12 +99,13 @@ public void getRandomNormalizedSamples(int numSamples, ArrayList<PVector> sample
     
     for ( int x = 0 ; x < numSections ; x++) {
       
-      float xSample = (float(x) * rectSize + random(1) * rectSize) - 0.5f;
-      float ySample = (float(y) * rectSize + random(1) * rectSize) - 0.5f;
+      float xSample = (float(x) * rectSize ) - 0.5f + rectSize/2 + (random(1) - 0.5f)*rectSize/2;
+      float ySample = (float(y) * rectSize ) - 0.5f + rectSize/2 + (random(1) - 0.5f)*rectSize/2;
       
-      
+      //println(xSample);
+      // println(ySample);
       if ( sqrt( xSample * xSample + ySample * ySample ) < 0.5f){
-        samples.add(new PVector(xSample, ySample, 0).normalize());
+        samples.add(new PVector(xSample, ySample, 0));
       }
       
     }   
@@ -139,7 +140,7 @@ public void getRadialSamplesInPlane(int numSamples,PVector center, PVector norma
     PVector yComp = yBasis.copy().mult(ySample * radius);
     
     PVector res = PVector.add(xComp, yComp).add(center);
-    println(res);
+    //println(res);
     sample.set(res.x,res.y,res.z);
   }
   

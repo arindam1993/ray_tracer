@@ -53,7 +53,7 @@ public class DiscLight implements Light{
     this.normal = normal;
     this.lColor = lColor;
     samplePoints = new ArrayList<PVector>();
-    getRadialSamplesInPlane(10, position, normal, radius,samplePoints);
+    //getRadialSamplesInPlane(scene.numRays, position, normal, radius,samplePoints);
   }
 
   public PVector getPosition(){
@@ -67,7 +67,7 @@ public class DiscLight implements Light{
   public void getShadowColor(RGB nonShadowColor, PVector intersectPt,Scene scene, SceneObject obj, boolean DEBUG){
     //PVector toLight = PVector.sub(this.getPosition(), intersectPt).normalize();
     //RGB shadowResult = isShadow(intersectPt, toLight, scene, obj, DEBUG);
-    
+    getRadialSamplesInPlane(scene.numRays, position, normal, radius,samplePoints);
     RGB avgShadow = new RGB(0,0,0);
     for ( PVector sample : samplePoints ){
       PVector toLight = PVector.sub(sample, intersectPt).normalize();

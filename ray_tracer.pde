@@ -266,6 +266,11 @@ void interpreter(String filename) {
        
        scene.addLight(dl);
       
+    }else if ( token[0].equals("lens")){
+      scene.lensRadius = float(token[1]);
+      scene.focalDistance = float(token[2]);
+      
+      println( "Lens: " + scene.lensRadius + " Focal Distance: " + scene.focalDistance );
     }else if (token[0].equals("write")) {
       // save the current image to a .png file
       

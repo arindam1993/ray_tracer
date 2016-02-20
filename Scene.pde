@@ -14,6 +14,8 @@ public class Scene{
   public float viewPlaneScale;
   public float pixSize;
   
+  public float focalDistance;
+  public float lensRadius;
   public Scene() {
     initDefaults();
     _currPixelRays = new ArrayList<Ray>();
@@ -31,6 +33,12 @@ public class Scene{
     
     eye = new PVector(0,0,0);
     bgColor = new RGB(0.0,0.0,0.0);
+    focalDistance = -1.0f; 
+    lensRadius = -1.0f;
+  }
+  
+  public boolean hasLens(){
+    return ( focalDistance >0 ) && ( lensRadius > 0);
   }
  
   public void addObject(SceneObject object){
@@ -91,6 +99,11 @@ public class Scene{
         for ( Ray r : _currPixelRays){
           
           r.setTimestamp(random(1));
+          if ( this.hasLens() ){
+            
+            if ( DEBUG ) println( r);
+            r.randomlyBlur(this.lensRadius, this.focalDistance);
+          }
           //print( r + " ");
           RayTraceReturn ret = RayTrace(r,scene,null,true, 0, false);
           if ( loopCt == 0){
