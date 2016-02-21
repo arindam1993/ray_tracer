@@ -79,6 +79,8 @@ public class Scene{
   public void clear(){
     objects.clear();
     lights.clear();
+    focalDistance = -1.0f; 
+    lensRadius = -1.0f;
      bgColor = new RGB(0.0,0.0,0.0);
   }
   

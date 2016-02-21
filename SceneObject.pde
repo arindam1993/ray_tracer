@@ -66,7 +66,7 @@ public class Polygon implements SceneObject{
    
    PVector planeVec = PVector.sub(vertices[0], intersectPt);
    
-   if ( abs(planeVec.dot(N) ) ==  0) return false;
+   //if ( abs(planeVec.dot(N) ) > 0.001f) return false;
     //print(intersectPt+" ");
    PVector C;
    

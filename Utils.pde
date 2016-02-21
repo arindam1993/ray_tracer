@@ -129,8 +129,8 @@ public void getRadialSamplesInPlane(int numSamples,PVector center, PVector norma
   PVector xBasis = normal.copy().cross(randVec).normalize();
   PVector yBasis = xBasis.copy().cross(normal).normalize();
   
-  println(xBasis);
-  println(yBasis);
+  //println(xBasis);
+  //println(yBasis);
   
   for ( PVector sample : samples){
     float xSample = sample.x;
