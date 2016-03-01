@@ -53,7 +53,7 @@ public class DiscLight implements Light{
     this.normal = normal;
     this.lColor = lColor;
     samplePoints = new ArrayList<PVector>();
-    getRadialSamplesInPlane(scene.numRays, position, normal, radius,samplePoints);
+    getRadialSamplesInPlane(scene.numRays, position, normal, 2*radius,samplePoints);
   }
 
   public PVector getPosition(){

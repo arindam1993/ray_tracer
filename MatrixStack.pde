@@ -12,7 +12,7 @@ public class MatrixStack{
   }
   
   public void push(){
-    PMatrix3D top = new PMatrix3D(matStack.peek());
+    PMatrix3D top = matStack.peek().get();
     
     matStack.push(top);
     

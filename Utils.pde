@@ -47,21 +47,24 @@ public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject ,
   retColor.copyTo(scene.getBackground());
   
   RayTraceReturn toRet= new RayTraceReturn(retColor, 999999.0f);
+  SceneObject intersectObj = null;
   
+  PVector interSectPt = new PVector(0,0,0);
   for(SceneObject obj : scene.getSceneObjects()){
     
    if( obj != emittedObject || isPrimaryRay){
-     PVector interSectPt = new PVector(0,0,0);
+ 
      float depth = obj.getRayColor(pixColor, ray, scene, interSectPt, DEBUG);
-     if( depth < minDepth && depth > 0 ){   
+     if(DEBUG){
+       println("Depth of "+ obj + " " + depth);
+     }
+     if( depth < minDepth && depth != -1.0f ){   
          retColor.copyTo(pixColor);
           toRet.depth = depth;
           minDepth = depth;
+          intersectObj = obj;
           
           
-          if ( DEBUG ){
-            println( "Ray hit : " + obj);
-          }
          //Recurse
          
          if( obj.getMaterial().spawnsSecondary()){
@@ -83,6 +86,10 @@ public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject ,
       }
     }
   }
+  
+  if ( DEBUG ){
+            //println( "Ray hit : " + intersectObj + " at " + interSectPt);
+          }
   ++bounceCt;
   return toRet;
 
@@ -148,7 +155,7 @@ public void getRadialSamplesInPlane(int numSamples,PVector center, PVector norma
 
 
 
-
+public RGB _unUsdRGB = new RGB(0,0,0);
 
 public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObject currObj, boolean DEBUG){
 
@@ -156,7 +163,7 @@ public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObje
   for( SceneObject obj : scene.getSceneObjects()){
     if( obj != currObj){
       PVector res = new PVector(0,0,0);
-      if ( obj.intersectRay(ray, res, DEBUG) ){
+      if ( obj.getRayColor(_unUsdRGB, ray,scene, res, DEBUG) != MISSED){
         if ( DEBUG ){
           println("Shadow Ray hit: "+obj);
           println("by Ray : " + ray + "at " + res);
@@ -173,8 +180,8 @@ public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObje
 PVector _pixPt = new PVector(0,0,-1);
 public Ray getEyeRay(Ray ray, int w, int h){
   
-  float px =(float)( w - (width/2)) * (2*scene.viewPlaneScale/width);
-  float py =(float)( h - (height/2)) *  (-1 * 2*scene.viewPlaneScale/height);
+  float px =(float)( w - (width/2)) * (scene.viewPlaneScale/width);
+  float py =(float)( h - (height/2)) *  (-1 * scene.viewPlaneScale/height);
   _pixPt.set(px,py,-1);
         
   //RGB pixColor = new RGB(0,0,0);
@@ -223,7 +230,24 @@ void getPixelRays(int w, int h, float pixSize, ArrayList<Ray> toRetRays){
 
 
 
-
+public void myInvert(PMatrix3D mat){
+  float tx = mat.m03;
+  float ty = mat.m13;
+  float tz = mat.m23;
+  
+  mat.m03 = 0;
+  mat.m13 = 0;
+  mat.m23 = 0;
+  
+  mat.invert();
+  
+  mat.m03 = -tx;
+  mat.m13 = -ty;
+  mat.m23 = -tz;
+  
+  
+  
+}
 
 public PMatrix3D MakeIdentityMatrix(){
  return new PMatrix3D(1, 0, 0, 0,

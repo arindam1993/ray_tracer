@@ -13,7 +13,7 @@ public class Ray{
   }
   
   public void setEndPoint(PVector point){
-    this.direction = PVector.sub(point, this.origin).normalize();
+    this.direction = PVector.sub(point, this.origin);//.normalize();
   }
   
   public Ray reflect(PVector normal, PVector hitPoint){
@@ -67,6 +67,28 @@ public class Ray{
     this.direction = PVector.sub(endPoint, randVec).normalize();
     
   
+  }
+  
+  public Ray transform(PMatrix3D mat){
+    PVector newOrigin = new PVector(0,0,0);
+    newOrigin = mat.mult(this.origin, newOrigin);
+    
+
+    PMatrix3D matC = mat.get();
+    
+  
+    matC.transpose();
+    
+    PVector newDirection = new PVector(0,0,0);
+    
+    newDirection = matC.mult(this.direction,newDirection);
+
+    //newDirection.normalize();
+    //PVector oldEndPt = PVector.add(this.origin, this.direction);
+    //PVector newEndPt = new PVector(0,0,0);
+    //newEndPt = mat.mult(oldEndPt, newEndPt);
+    //newEndPt.sub(newOrigin).normalize();
+    return new Ray(newOrigin,newDirection);
   }
   
   public String toString(){

@@ -1,4 +1,4 @@
-
+import java.util.HashMap;
 
 //Data structure which stores the entire scene, gets built up as the .cli file gets parsed
 public class Scene{
@@ -6,6 +6,8 @@ public class Scene{
   private ArrayList<SceneObject> objects;
   private ArrayList<Light> lights;
   private ArrayList<Ray> _currPixelRays;
+  private HashMap<String, SceneObject> namedObjs;
+  
   private RGB bgColor;
   public int numRays;
   
@@ -30,11 +32,12 @@ public class Scene{
   private void initDefaults(){
     objects = new ArrayList<SceneObject>();
     lights = new ArrayList<Light>();
-    
+    namedObjs = new HashMap<String, SceneObject>();
     eye = new PVector(0,0,0);
     bgColor = new RGB(0.0,0.0,0.0);
     focalDistance = -1.0f; 
     lensRadius = -1.0f;
+    numRays=1;
   }
   
   public boolean hasLens(){
@@ -71,6 +74,16 @@ public class Scene{
   public ArrayList<Light> getLights(){
     return lights;
   }
+  
+  public void addNamedObj(String name, SceneObject obj){
+    namedObjs.put(name,obj);
+  }
+  
+  public SceneObject getObjByName(String name){
+    return namedObjs.get(name);
+  }
+  
+  
   
   public ArrayList<SceneObject> getSceneObjects(){
     return objects;
@@ -123,7 +136,7 @@ public class Scene{
         //if ( DEBUG )
          //print( finalColor + " " );
         
-        if( finalDepth <= ZBuffer[w][h] && finalDepth > 0){
+        if( finalDepth <= ZBuffer[w][h] ){
           
           set(int(w),int(h), finalColor.getPColor());
           ZBuffer[w][h] = finalDepth;
