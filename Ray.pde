@@ -13,7 +13,7 @@ public class Ray{
   }
   
   public void setEndPoint(PVector point){
-    this.direction = PVector.sub(point, this.origin);//.normalize();
+    this.direction = PVector.sub(point, this.origin).normalize();
   }
   
   public Ray reflect(PVector normal, PVector hitPoint){

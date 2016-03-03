@@ -54,9 +54,10 @@ public RayTraceReturn RayTrace(Ray ray, Scene scene, SceneObject emittedObject ,
     
    if( obj != emittedObject || isPrimaryRay){
  
-     float depth = obj.getRayColor(pixColor, ray, scene, interSectPt, DEBUG);
+     float depth = obj.getRayColor(pixColor, ray, scene, interSectPt, DEBUG, false);
      if(DEBUG){
-       println("Depth of "+ obj + " " + depth);
+       if( depth != -1.0f)
+         println("Depth of "+ obj + " " + depth);
      }
      if( depth < minDepth && depth != -1.0f ){   
          retColor.copyTo(pixColor);
@@ -160,17 +161,21 @@ public RGB _unUsdRGB = new RGB(0,0,0);
 public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObject currObj, boolean DEBUG){
 
   Ray ray = new Ray(intersectPt, toLight.copy().normalize());
+  if(DEBUG)
+   println("Shadow Ray: " + ray );
+   
   for( SceneObject obj : scene.getSceneObjects()){
     if( obj != currObj){
       PVector res = new PVector(0,0,0);
-      if ( obj.getRayColor(_unUsdRGB, ray,scene, res, DEBUG) != MISSED){
+      float depth = obj.getRayColor(_unUsdRGB, ray,scene, res, DEBUG, true);
+      if ( depth != MISSED){
         if ( DEBUG ){
           println("Shadow Ray hit: "+obj);
-          println("by Ray : " + ray + "at " + res);
+         
         }
         return new RGB(0,0,0);
       }
-    }
+   }
   }
   
   return new RGB(1,1,1);
