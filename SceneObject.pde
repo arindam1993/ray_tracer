@@ -20,6 +20,111 @@ public interface SceneObject{
   
   
 }
+
+
+public class ListObject implements SceneObject{
+
+    private ArrayList<SceneObject> objects;
+    private boolean accelerated;
+    
+    private SceneObject lastQueried;
+    
+    public ListObject(){
+      objects = new ArrayList<SceneObject>();
+      accelerated = false;
+      lastQueried = null;
+    }
+    
+    
+    public float intersectRay(Ray ray, PVector result, boolean DEBUG, boolean isShadowRay){
+      SceneObject closest = null;
+      float minDepth = 999999.0f;
+      for( SceneObject _obj : objects ){
+        
+        float depth = _obj.intersectRay(ray,result,DEBUG,isShadowRay);
+        
+        if( depth != MISSED ){
+          
+          if( depth < minDepth){
+            
+            closest = _obj;
+            minDepth = depth;
+            
+          }
+          
+        }
+      }
+      
+      if ( closest == null ) return MISSED;
+      
+      lastQueried = closest;
+      return closest.intersectRay(ray,result,DEBUG,isShadowRay);
+      
+    }
+    
+    
+    
+    public float getRayColor(RGB retColor, Ray ray, Scene scene, PVector retIntersectPt, boolean DEBUG, boolean isShadowRay){
+      PVector intersectPt = new PVector(0,0,0);
+      
+      if( this.intersectRay(ray, intersectPt, false, isShadowRay) != MISSED){
+        PVector surfNormal = this.getSurfaceNormalAtPt(intersectPt);
+        
+        //Double sided polygon hack
+        if ( lastQueried instanceof Polygon){
+          if( surfNormal.dot(intersectPt) > 0) surfNormal.mult(-1);
+        }
+        
+        if(!isShadowRay){
+          retColor.copyTo(this.lastQueried.getMaterial().getRenderColor(intersectPt, surfNormal, scene, ray, this, DEBUG));
+        }
+        
+        retIntersectPt.set(intersectPt.x, intersectPt.y, intersectPt.z);
+        
+        return PVector.sub(intersectPt, ray.origin).mag();
+      }else{
+      retColor.copyTo(scene.getBackground());
+      return MISSED;
+      } 
+      
+    }
+    public PVector getPosition(){
+      return new PVector(0,0,0);
+    }
+  
+    
+    public Material getMaterial(){
+      return lastQueried.getMaterial();
+    }
+    public void setMaterial(Material mat){
+      for ( SceneObject _obj : objects ){
+        _obj.setMaterial(mat);
+      }
+    }
+    
+    public PVector getSurfaceNormalAtPt(PVector pt){
+    
+      return lastQueried.getSurfaceNormalAtPt(pt);
+    }
+    public Ray getRefractedRay(Ray incidentRay){
+    
+      return lastQueried.getRefractedRay(incidentRay);
+    }
+    
+    public void transform(PMatrix3D t){
+      for ( SceneObject _obj : objects ){
+        _obj.transform(t);
+      }
+    }
+    
+    public void addObject(SceneObject obj){
+      objects.add(obj);
+    }
+    
+    
+}
+
+
 public class InstancedObject implements SceneObject{
 
   SceneObject baseObj;

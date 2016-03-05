@@ -12,6 +12,9 @@ PMatrix3D global_mat;
 float[] gmat = new float[16];  // global matrix values
 Scene scene;
 MatrixStack matStack;
+
+boolean isListObject = false;
+ListObject currentListObject = null;
 // Some initializations for the scene.
 
 void setup() {
@@ -197,8 +200,19 @@ void interpreter(String filename) {
       
       currentPolygon.transform(matStack.top());
       
-      scene.addObject(currentPolygon);
-    }else if ( token[0].equals("push") ){
+      if( !isListObject ){
+        scene.addObject(currentPolygon);
+      }else{
+        currentListObject.addObject(currentPolygon);
+      }
+    }else if (token[0].equals("begin_list")){
+      currentListObject = new ListObject();
+      isListObject = true;
+    }else if ( token[0].equals("end_list")){
+      isListObject = false;
+      scene.addObject(currentListObject);
+    }
+    else if ( token[0].equals("push") ){
       matStack.push();
     }else if ( token[0].equals("pop") ){
       matStack.pop();
