@@ -167,6 +167,8 @@ void interpreter(String filename) {
       
       obj.transform(matStack.top());
       
+      obj.initBBox();
+      
       lastObj = obj;
       //scene.addObject(obj);
     }
@@ -200,6 +202,8 @@ void interpreter(String filename) {
       
       currentPolygon.transform(matStack.top());
       
+      currentPolygon.initBBox();
+      
       if( !isListObject ){
         scene.addObject(currentPolygon);
       }else{
@@ -210,6 +214,7 @@ void interpreter(String filename) {
       isListObject = true;
     }else if ( token[0].equals("end_list")){
       isListObject = false;
+      currentListObject.initBBox();
       scene.addObject(currentListObject);
     }
     else if ( token[0].equals("push") ){
@@ -254,6 +259,7 @@ void interpreter(String filename) {
       );
       
       movSphere.transform(matStack.top());
+      movSphere.initBBox();
       scene.addObject(movSphere);
     
     }else if( token[0].equals("box") ){

@@ -15,6 +15,9 @@ public interface SceneObject{
   public PVector getSurfaceNormalAtPt(PVector pt);
   public Ray getRefractedRay(Ray incidentRay);
   
+  public PVector getBBoxMin();
+  public PVector getBBoxMax();
+  public void initBBox();
   
   public void transform(PMatrix3D t);
   
@@ -29,14 +32,23 @@ public class ListObject implements SceneObject{
     
     private SceneObject lastQueried;
     
+    private PVector _bboxMin;
+    private PVector _bboxMax;
+    private BoundingBox bbox;
+    
     public ListObject(){
       objects = new ArrayList<SceneObject>();
       accelerated = false;
       lastQueried = null;
+      _bboxMin = new PVector(99999.0f,99999.0f,99999.0f);
+      _bboxMax = new PVector(-99999.0f,-99999.0f,-99999.0f);
     }
     
     
     public float intersectRay(Ray ray, PVector result, boolean DEBUG, boolean isShadowRay){
+      
+      if( this.bbox.intersectRay(ray,result,DEBUG,isShadowRay) == MISSED ){ return MISSED; }
+      
       SceneObject closest = null;
       float minDepth = 999999.0f;
       for( SceneObject _obj : objects ){
@@ -119,9 +131,35 @@ public class ListObject implements SceneObject{
     
     public void addObject(SceneObject obj){
       objects.add(obj);
+      
+      PVector min = obj.getBBoxMin();
+      
+      if ( min.x < _bboxMin.x ) _bboxMin.x  = min.x;
+      if ( min.y < _bboxMin.y ) _bboxMin.y  = min.y;
+      if ( min.z < _bboxMin.z ) _bboxMin.z  = min.z;
+      
+      PVector max = obj.getBBoxMax();
+      
+      if ( max.x > _bboxMax.x ) _bboxMax.x  = max.x;
+      if ( max.y > _bboxMax.y ) _bboxMax.y  = max.y;
+      if ( max.z > _bboxMax.z ) _bboxMax.z  = max.z;
+      
     }
     
+  public PVector getBBoxMin(){
+    return _bboxMin;
+  }
+  
+  public PVector getBBoxMax(){
+    return _bboxMax;
+  }
     
+  public void initBBox(){
+    PVector min = this.getBBoxMin();
+    PVector max = this.getBBoxMax();
+    this.bbox = new BoundingBox(min.x,min.y,min.z, max.x , max.y, max.z);
+    println(this.bbox+ "List Object Created ");
+  }
 }
 
 
@@ -131,6 +169,7 @@ public class InstancedObject implements SceneObject{
   PMatrix3D tMat;
   PMatrix3D invertTMat;
   PMatrix3D adjTMat;
+  
   
   public InstancedObject(String name){
     baseObj = scene.getObjByName(name);
@@ -221,6 +260,18 @@ public class InstancedObject implements SceneObject{
   
   
   public void transform(PMatrix3D t){}
+  
+    public PVector getBBoxMin(){
+    return baseObj.getBBoxMin();
+  }
+  
+  public PVector getBBoxMax(){
+    return baseObj.getBBoxMax();
+  }
+  
+   public void initBBox(){
+    baseObj.initBBox();
+  }
   
   public String toString(){
     return "Instance of :" + baseObj;
@@ -342,9 +393,22 @@ public class BoundingBox implements SceneObject{
   
   }
   
+  public PVector getBBoxMin(){
+    return min;
+  }
+  
+   public PVector getBBoxMax(){
+    return max;
+  }
+  
+   public void initBBox(){
+  }
   
   public void transform(PMatrix3D t){}
   
+  public String toString(){
+    return " BoundingBox: { Min:" + this.min + " , Max : " + this.max + "}";
+  }
   
 }
 
@@ -353,10 +417,15 @@ public class Polygon implements SceneObject{
  PVector[] vertices;
  int numVertices;
  Material mat;
+ PVector _bboxMin;
+ PVector _bboxMax;
+ BoundingBox bbox;
   
  public Polygon(){
    vertices = new PVector[3];
    numVertices = 0;
+   _bboxMin = new PVector(9999.0f,9999.0f,9999.0f);
+   _bboxMax = new PVector(-9999.0f,-9999.0f,-9999.0f);
  }
   
  public void addVertex(PVector v){
@@ -369,6 +438,7 @@ public class Polygon implements SceneObject{
  
  public float intersectRay(Ray ray, PVector result, boolean DEBUG, boolean isShadowRay){
    
+   if( this.bbox.intersectRay(ray,result,DEBUG,isShadowRay) == MISSED ){ return MISSED; }
    
    //Ray is almost parallel
    PVector N = getSurfaceNormalAtPt(new PVector(0,0,0));
@@ -510,6 +580,36 @@ public class Polygon implements SceneObject{
   }
   
   
+  public PVector getBBoxMin(){
+    for ( PVector v: vertices){
+      if ( v.x < _bboxMin.x ) _bboxMin.x = v.x;
+      if ( v.y < _bboxMin.y ) _bboxMin.y = v.y;
+      if ( v.z < _bboxMin.z ) _bboxMin.z = v.z;
+    }
+    
+    return _bboxMin;
+  }
+  
+  public PVector getBBoxMax(){
+    
+     for ( PVector v: vertices){
+      if ( v.x > _bboxMax.x ) _bboxMax.x = v.x;
+      if ( v.y > _bboxMax.y ) _bboxMax.y = v.y;
+      if ( v.z > _bboxMax.z ) _bboxMax.z = v.z;
+    }
+    
+
+    
+    return _bboxMax;
+  }
+  
+   public void initBBox(){
+    PVector min = this.getBBoxMin();
+    PVector max = this.getBBoxMax();
+    this.bbox = new BoundingBox(min.x,min.y,min.z, max.x , max.y, max.z);
+    println(this.bbox+" Created " );
+  }
+  
   public String toString(){
     return "Polygon: { v0: "+vertices[0]+", v1: "+vertices[1]+", v2: "+vertices[2] + ", Material: "+ mat+"}";
   }
@@ -525,6 +625,7 @@ public class Sphere implements SceneObject{
   PVector position;
   float radius;
   Material mat;
+  BoundingBox bbox;
   
   public Sphere(PVector position, float radius, Material mat){
     this.position = position;
@@ -568,6 +669,8 @@ public class Sphere implements SceneObject{
   }
   
   public float intersectRay(Ray ray, PVector result, boolean DEBUG, boolean isShadowRay){
+    
+    if( this.bbox.intersectRay(ray,result,DEBUG,isShadowRay) == MISSED ){ return MISSED; }
     
     float dx = ray.direction.x;
     float dy = ray.direction.y;
@@ -676,7 +779,19 @@ public class Sphere implements SceneObject{
     this.radius*=scale;
   }
   
+    public PVector getBBoxMin(){
+    return this.getPosition().copy().add(_Gxyz.copy().mult(-1 * this.radius));
+  }
   
+   public PVector getBBoxMax(){
+    return this.getPosition().copy().add(_Gxyz.copy().mult(this.radius));
+  }
+  
+   public void initBBox(){
+    PVector min = this.getBBoxMin();
+    PVector max = this.getBBoxMax();
+    this.bbox = new BoundingBox(min.x,min.y,min.z, max.x , max.y, max.z);
+  }
   
   public String toString(){
     return "Sphere : { x:" + position.x + " y:" + position.y + " z:" + position.z + " R:" + radius +" Material :"+this.mat +" } ";
@@ -729,6 +844,8 @@ public class MovingSphere extends Sphere{
     
     this.radius*=scale;
   }
+  
+
   
    public String toString(){
     return "Moving Sphere : { start: "+ start+", end: " + end + " R:" + radius +" Material :"+this.mat +" } ";

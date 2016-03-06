@@ -47,6 +47,7 @@ public class Scene{
   public void addObject(SceneObject object){
     objects.add(object);
     
+    
     println("Added Object: "+object.toString());
   }
   public void addLight(Light light){

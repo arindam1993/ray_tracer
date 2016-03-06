@@ -3,7 +3,10 @@ pixels[(h*w+w)] = c;
 updatePixels();
 }
 
-
+PVector _Gx = new PVector(1,0,0);
+PVector _Gy = new PVector(0,1,0);
+PVector _Gz = new PVector(0,0,1);
+PVector _Gxyz = new PVector(1,1,1);
 
 //Assumes vector pointing away from the surface
 public PVector Reflect(PVector vec, PVector normal){
