@@ -27,14 +27,16 @@ public interface SceneObject{
 
 public class ListObject implements SceneObject{
 
-    private ArrayList<SceneObject> objects;
+    public ArrayList<SceneObject> objects;
     private boolean accelerated;
     
-    private SceneObject lastQueried;
+    public SceneObject lastQueried;
     
     private PVector _bboxMin;
     private PVector _bboxMax;
     private BoundingBox bbox;
+    
+    private BVHTree objectsTree;
     
     public ListObject(){
       objects = new ArrayList<SceneObject>();
@@ -42,6 +44,7 @@ public class ListObject implements SceneObject{
       lastQueried = null;
       _bboxMin = new PVector(99999.0f,99999.0f,99999.0f);
       _bboxMax = new PVector(-99999.0f,-99999.0f,-99999.0f);
+      objectsTree = null;
     }
     
     
@@ -49,28 +52,35 @@ public class ListObject implements SceneObject{
       
       if( this.bbox.intersectRay(ray,result,DEBUG,isShadowRay) == MISSED ){ return MISSED; }
       
-      SceneObject closest = null;
-      float minDepth = 999999.0f;
-      for( SceneObject _obj : objects ){
-        
-        float depth = _obj.intersectRay(ray,result,DEBUG,isShadowRay);
-        
-        if( depth != MISSED ){
+      if ( !accelerated ){
+        SceneObject closest = null;
+        float minDepth = 999999.0f;
+        for( SceneObject _obj : objects ){
           
-          if( depth < minDepth){
+          float depth = _obj.intersectRay(ray,result,DEBUG,isShadowRay);
+          
+          if( depth != MISSED ){
             
-            closest = _obj;
-            minDepth = depth;
+            if( depth < minDepth){
+              
+              closest = _obj;
+              minDepth = depth;
+              
+            }
             
           }
-          
         }
+        
+        if ( closest == null ) return MISSED;
+        
+        lastQueried = closest;
+        return closest.intersectRay(ray,result,DEBUG,isShadowRay);
       }
-      
-      if ( closest == null ) return MISSED;
-      
-      lastQueried = closest;
-      return closest.intersectRay(ray,result,DEBUG,isShadowRay);
+      else {     
+        BVHReturn ret = objectsTree.intersect(ray,result,DEBUG,isShadowRay);
+        lastQueried = ret.finalObj;
+        return ret.t;
+      }
       
     }
     
@@ -153,12 +163,26 @@ public class ListObject implements SceneObject{
   public PVector getBBoxMax(){
     return _bboxMax;
   }
+  
+  public void merge(ListObject obj){
+    for ( SceneObject o : obj.objects ){
+      this.objects.add(o);
+    }
+    initBBox();
+  }
     
   public void initBBox(){
     PVector min = this.getBBoxMin();
     PVector max = this.getBBoxMax();
     this.bbox = new BoundingBox(min.x,min.y,min.z, max.x , max.y, max.z);
-    println(this.bbox+ "List Object Created ");
+    
+  }
+  
+  public void accelerate(){
+    println("accelerating");
+    accelerated = true;
+    objectsTree = new BVHTree(this);
+    objectsTree.build();
   }
 }
 
@@ -607,7 +631,7 @@ public class Polygon implements SceneObject{
     PVector min = this.getBBoxMin();
     PVector max = this.getBBoxMax();
     this.bbox = new BoundingBox(min.x,min.y,min.z, max.x , max.y, max.z);
-    println(this.bbox+" Created " );
+   
   }
   
   public String toString(){

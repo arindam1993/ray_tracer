@@ -1,0 +1,1 @@
+DiffuseMaterial _debugGreen = new DiffuseMaterial(new RGB(0,0.5f,0), new RGB(0,0.5f,0));

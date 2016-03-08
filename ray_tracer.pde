@@ -216,6 +216,11 @@ void interpreter(String filename) {
       isListObject = false;
       currentListObject.initBBox();
       scene.addObject(currentListObject);
+    }else if ( token[0].equals("end_accel")){
+      isListObject = false;
+      currentListObject.initBBox();
+      currentListObject.accelerate();
+      scene.addObject(currentListObject);
     }
     else if ( token[0].equals("push") ){
       matStack.push();
