@@ -13,10 +13,11 @@ float[] gmat = new float[16];  // global matrix values
 Scene scene;
 MatrixStack matStack;
 
+int timer;
 boolean isListObject = false;
 ListObject currentListObject = null;
 // Some initializations for the scene.
-
+ SceneObject lastObj = null;
 void setup() {
   size (300, 300, P3D);  // use P3D environment so that matrix commands work properly
   noStroke();
@@ -50,7 +51,7 @@ void setup() {
   SceneObject currentPolygon ;
 
 void keyPressed() {
-  
+  lastObj = null;
   currentMaterial = new DiffuseMaterial(new RGB(1.0,1.0,1.0), new RGB(1.0,1.0,1.0));   
   currentPolygon = new Polygon();
   initZbuffer();
@@ -84,7 +85,7 @@ void interpreter(String filename) {
   String str[] = loadStrings(filename);
   if (str == null) println("Error! Failed to read the file.");
 
-  SceneObject lastObj = null;
+
   for (int i=0; i<str.length; i++) {
     
     String[] token = splitTokens(str[i], " "); // Get a line and parse tokens.
@@ -169,7 +170,7 @@ void interpreter(String filename) {
       
       obj.initBBox();
       
-      lastObj = obj;
+      _handleInstaceAdd(obj);
       //scene.addObject(obj);
     }
     else if (token[0].equals("read")) {  // reads input from another file
@@ -205,7 +206,7 @@ void interpreter(String filename) {
       currentPolygon.initBBox();
       
       if( !isListObject ){
-        scene.addObject(currentPolygon);
+        _handleInstaceAdd(currentPolygon);
       }else{
         currentListObject.addObject(currentPolygon);
       }
@@ -215,12 +216,12 @@ void interpreter(String filename) {
     }else if ( token[0].equals("end_list")){
       isListObject = false;
       currentListObject.initBBox();
-      scene.addObject(currentListObject);
+      _handleInstaceAdd(currentListObject);
     }else if ( token[0].equals("end_accel")){
       isListObject = false;
       currentListObject.initBBox();
       currentListObject.accelerate();
-      scene.addObject(currentListObject);
+      _handleInstaceAdd( currentListObject);
     }
     else if ( token[0].equals("push") ){
       matStack.push();
@@ -265,7 +266,7 @@ void interpreter(String filename) {
       
       movSphere.transform(matStack.top());
       movSphere.initBBox();
-      scene.addObject(movSphere);
+      _handleInstaceAdd(movSphere);
     
     }else if( token[0].equals("box") ){
       float xMin = float(token[1]);
@@ -278,11 +279,12 @@ void interpreter(String filename) {
       SceneObject box = new BoundingBox(xMin,yMin,zMin, xMax, yMax, zMax);
       box.transform(matStack.top());
       box.setMaterial(currentMaterial);
-      scene.addObject(box);
+      _handleInstaceAdd(box);
       
     }else if(token[0].equals("named_object")){
       String name = token[1];
       scene.addNamedObj(name, lastObj);
+      lastObj = null;
     }else if(token[0].equals("instance")){
       String name = token[1];
       SceneObject obj = new InstancedObject(name);
@@ -317,12 +319,30 @@ void interpreter(String filename) {
       scene.focalDistance = float(token[2]);
       
       println( "Lens: " + scene.lensRadius + " Focal Distance: " + scene.focalDistance );
+    }else if(token[0].equals("noise")){
+      float scale = float(token[1]);
+      Texture nT= new NoiseTexture(scale);
+      currentMaterial.setTexture(nT);
+      
+    }else if(token[0].equals("wood")){
+      
+      Texture nT= new WoodTexture(new PVector(-0.707,0,0.707), new PVector(0,0,-4));
+      currentMaterial.setTexture(nT);
     }else if (token[0].equals("write")) {
       // save the current image to a .png file
-      
+      if( lastObj != null ) scene.addObject(lastObj);
       if(!filename.equals("rect_test.cli")) scene.render();
       save(token[1]);  
+    }   else if (token[0].equals("reset_timer")) {
+      timer = millis();
     }
+    else if (token[0].equals("print_timer")) {
+      int new_timer = millis();
+      int diff = new_timer - timer;
+      float seconds = diff / 1000.0;
+      println ("timer = " + seconds);
+    }
+
   }
 }
 

@@ -28,6 +28,13 @@ public class RGB{
     return this;
   }
   
+  public RGB sub(RGB c){
+    this.r -= c.r;
+    this.g -= c.g;
+    this.b -= c.b;
+    return this;
+  }
+  
   public RGB mult(float f){
     this.r*=f;
     this.g*=f;
@@ -62,6 +69,10 @@ public class RGB{
   
   
 }
+
+
+RGB WHITE = new RGB(1,1,1);
+RGB BLACK = new RGB(0,0,0);
 
 public RGB MakeColor(float r, float g, float b){
   return new RGB(r,g,b);

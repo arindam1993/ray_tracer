@@ -198,9 +198,9 @@ public class InstancedObject implements SceneObject{
   public InstancedObject(String name){
     baseObj = scene.getObjByName(name);
     tMat = matStack.top().get();
-
+    println("Matrix of Instanced Object:"); 
     tMat.print();
-    println();    
+       
     invertTMat = tMat.get();
     invertTMat.invert();
      //myInvert(invertTMat);
@@ -494,11 +494,11 @@ public class Polygon implements SceneObject{
      println("t:"+t+" "+ " fact: " + abs(planeVec.dot(N)));
    }
    
-   if ( abs(planeVec.dot(N) ) > 0.1f) {
+   //if ( abs(planeVec.dot(N) ) > 0.1f) {
 
-   return MISSED;
-}
-// 
+   //return MISSED;
+//}
+//// 
       
    //if(DEBUG && isShadowRay){
    //  println("t:"+t+" ");

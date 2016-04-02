@@ -76,13 +76,13 @@ public class Ray{
 
     PMatrix3D matC = mat.get();
     
-  
+    matC.invert();
     matC.transpose();
     
     PVector newDirection = new PVector(0,0,0);
     
     newDirection = matC.mult(this.direction,newDirection);
-
+    
     //newDirection.normalize();
     //PVector oldEndPt = PVector.add(this.origin, this.direction);
     //PVector newEndPt = new PVector(0,0,0);

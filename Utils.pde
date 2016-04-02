@@ -3,6 +3,15 @@ pixels[(h*w+w)] = c;
 updatePixels();
 }
 
+public void _handleInstaceAdd( SceneObject currObj){
+  if ( lastObj == null ){
+    lastObj = currObj; 
+  }else{
+    scene.addObject(lastObj);
+    lastObj = currObj;
+  }
+}
+
 PVector _Gx = new PVector(1,0,0);
 PVector _Gy = new PVector(0,1,0);
 PVector _Gz = new PVector(0,0,1);
@@ -205,8 +214,7 @@ int getNearestSquareRoot( int n ){
 void getPixelRays(int w, int h, float pixSize, ArrayList<Ray> toRetRays){
   float gridSize = pixSize/getNearestSquareRoot(scene.numRays);
   boolean DEBUG = (w < 5) && (h <5);
-  if (DEBUG)
-    println(" For " + w + " " + h + " " + gridSize);
+
   
   float px =(float)( w - (width/2)) * (pixSize);
   float py =(float)( h - (height/2)) *  (-1 * pixSize);

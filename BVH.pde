@@ -270,10 +270,25 @@ class BVHTree{
     }
   }
   
+  private float getAxisWidth(BVHNode node, int axis){
+    char axisC = SplitAxis[axis];
+    if ( axisC =='x'){
+      return node.bbox.getBBoxMax().x - node.bbox.getBBoxMin().x;
+    }
+    
+    if ( axisC =='y'){
+      return node.bbox.getBBoxMax().y - node.bbox.getBBoxMin().y;
+    }
+    
+   
+      return node.bbox.getBBoxMax().z - node.bbox.getBBoxMin().z;
+    
+  }
+  
   private void _buildRecur(BVHNode node, int axis, int depth){
     //println("Number of objects to split :" + node.numObjects());
     if ( node != null){
-      if ( node.numObjects() > 4 && depth < MAX_TREE_DEPTH){
+      if ( node.numObjects()> 5 && depth < MAX_TREE_DEPTH){
         node.splitNode(axis);
         
         axis = (axis + 1)%3;
