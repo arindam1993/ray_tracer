@@ -41,7 +41,7 @@ public class WoodTexture implements Texture{
     this.woodHigh = new RGB( 115.0f/255.0f,64.0f/255.0f,23.0f/255.0f);
   }
   
-  public RGB getTexColor(float u, float v, float w){
+  /*public RGB getTexColor(float u, float v, float w){
     float t = getDistanceFromAxis(new PVector(u,v,w));
     t+=noise(t*5);
     float tP = t%1.0f;
@@ -59,6 +59,26 @@ public class WoodTexture implements Texture{
     
     float distance = PVector.add(origin,axis).mult(ptProj).sub(pt).mag();
     return distance + noise(angle/(PI));
+  }*/
+  
+  
+    public RGB getTexColor(float u, float v, float w){
+    float dist = getDistanceFromAxis(new PVector(u,v,w))  ;
+   
+    dist+=noise(dist*2);
+   
+    float t = (sin(dist*(20*PI))+1.0f)*0.5f;
+
+    return woodLow.clone().add((woodHigh.clone().sub(woodLow)).mult(t));
+  }
+  
+   private float getDistanceFromAxis(PVector pt){
+    PVector localPt = PVector.sub(pt, origin);
+    float ptProj = localPt.dot(axis);
+    
+    float angle = PVector.angleBetween(PVector.add(origin,axis.copy().mult(ptProj)).sub(pt), new PVector(0,1,0));
+    float distance = PVector.add(origin,axis.copy().mult(ptProj)).sub(pt).mag();
+    return distance + noise(angle/(2*PI));
   }
 }
 
@@ -78,11 +98,11 @@ public class MarbleTexture implements Texture{
 }
   
   public RGB getTexColor(float u, float v, float w){
-    float dist = getDistanceFromAxis(new PVector(u,v,w))  ;
+    float dist = getDistanceFromAxis(new PVector(u,v,w)) + noise(u*2,v*2,w*2) ;
    
-   dist+=noise(dist);
+   dist+=noise(dist*5);
    
-    float t = (sin(dist*(15*PI))+1.0f)*0.5f;
+    float t = (sin(dist*(15*PI + noise(dist) ))+1.0f)*0.5f;
     print(t + " ");
     
     return marbleHigh.clone().mult(t);
@@ -91,7 +111,9 @@ public class MarbleTexture implements Texture{
    private float getDistanceFromAxis(PVector pt){
     PVector localPt = PVector.sub(pt, origin);
     float ptProj = localPt.dot(axis);
+    
+    float angle = PVector.angleBetween(PVector.add(origin,axis.copy().mult(ptProj)).sub(pt), new PVector(0,1,0));
     float distance = PVector.add(origin,axis.copy().mult(ptProj)).sub(pt).mag();
-    return distance;
+    return distance + noise(angle/(2*PI));
   }
 }
