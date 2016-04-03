@@ -43,7 +43,7 @@ public class WoodTexture implements Texture{
   
   public RGB getTexColor(float u, float v, float w){
     float t = getDistanceFromAxis(new PVector(u,v,w));
-    t+=noise(t*10);
+    t+=noise(t*5);
     float tP = t%1.0f;
    
     //print(tP +" ");
@@ -58,6 +58,40 @@ public class WoodTexture implements Texture{
     float angle = PVector.angleBetween(PVector.add(origin,axis.copy().mult(ptProj)).sub(pt), new PVector(0,1,0));
     
     float distance = PVector.add(origin,axis).mult(ptProj).sub(pt).mag();
-    return distance + noise(angle/(PI/2));
+    return distance + noise(angle/(PI));
+  }
+}
+
+public class MarbleTexture implements Texture{
+  
+  PVector axis;
+  PVector origin;
+  
+  RGB marbleLow ;
+  RGB marbleHigh;
+  public MarbleTexture(PVector axis, PVector origin){
+    this.axis = axis;
+    this.origin = origin;
+      
+    this.marbleLow = new RGB(0,0,0);
+    this.marbleHigh = new RGB(1,1,1);
+}
+  
+  public RGB getTexColor(float u, float v, float w){
+    float dist = getDistanceFromAxis(new PVector(u,v,w))  ;
+   
+   dist+=noise(dist);
+   
+    float t = (sin(dist*(15*PI))+1.0f)*0.5f;
+    print(t + " ");
+    
+    return marbleHigh.clone().mult(t);
+  }
+  
+   private float getDistanceFromAxis(PVector pt){
+    PVector localPt = PVector.sub(pt, origin);
+    float ptProj = localPt.dot(axis);
+    float distance = PVector.add(origin,axis.copy().mult(ptProj)).sub(pt).mag();
+    return distance;
   }
 }
