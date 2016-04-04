@@ -25,6 +25,7 @@ public class RGB{
     this.r += c.r;
     this.g += c.g;
     this.b += c.b;
+    
     return this;
   }
   
@@ -39,6 +40,10 @@ public class RGB{
     this.r*=f;
     this.g*=f;
     this.b*=f;
+    
+    if( this.r > 1.0f) this.r = 1.0f;
+    if( this.g > 1.0f) this.g = 1.0f;
+    if( this.b > 1.0f) this.b = 1.0f;
     return this;
   }
   
@@ -65,6 +70,10 @@ public class RGB{
     if( other.r == this.r && other.g == this.g && other.b == this.b) return true;
     
     return false;
+  }
+  
+  public float mag(){
+    return sqrt(r*r + g*g + b*b);
   }
   
   

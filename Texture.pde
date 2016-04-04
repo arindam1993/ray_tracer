@@ -117,3 +117,76 @@ public class MarbleTexture implements Texture{
     return distance + noise(angle/(2*PI));
   }
 }
+
+
+public class StoneTexture implements Texture{
+  
+  public PVector min;
+  public PVector max;
+  public int numStones;
+  RGB filler;
+  RGB tileMain;
+  RGB tileDust;
+  
+  public StoneTexture(PVector min, PVector max, int stones){
+    this.min = min;
+    this.max = max;
+    this.numStones = stones;
+    
+    
+    this.filler = new RGB(0.8,0.8,0.8);
+    this.tileMain =  new RGB( 255.0f/255.0f,51.0f/255.0f,0.0f/255.0f);
+    this.tileDust =  new RGB( 102.0f/255.0f,51.0f/255.0f,0.0f/255.0f);
+  }
+  
+   public RGB getTexColor(float u, float v, float w){
+     randomSeed(this.numStones);
+     PVector pt = new PVector(u,v,w);
+     
+     float min = 99999.0f;
+
+     for( int i = 0 ; i < this.numStones; i++){
+       PVector rand = getRandomPoint();
+      
+       float dist = pt.dist(rand);
+       if( dist < min ){
+         min = dist;
+       }
+     }
+     
+     
+     randomSeed(this.numStones);
+     float min2 =99999.0f;
+     for( int i = 0 ; i < this.numStones; i++){
+       PVector rand = getRandomPoint();
+      
+       float dist = pt.dist(rand);
+       if( dist < min2 && dist !=min){
+         min2 = dist;
+       }
+     }
+     
+     if( abs(min -min2) < 0.01) return getFillerColor(pt);
+     
+     return getTileColor(pt);
+   }
+   
+   private RGB getTileColor(PVector pt){
+     float noise = (noise_3d(pt.x * 5, pt.y *5 , pt.z *5) + 1)/2 ;
+     return tileMain.clone().mult(noise).add(tileDust.clone().mult(1 - noise));
+   }
+   
+   private RGB getFillerColor(PVector pt){
+     float noise = (noise_3d(pt.x * 35, pt.y* 35 , pt.z *35) + 1)/2 + 0.3f ;
+     return filler.clone().mult(noise);
+   }
+   
+   private PVector getRandomPoint(){
+     PVector ret = new PVector(0,0,0);
+     ret.x = random(min.x, max.x);
+     ret.y = random(min.y, max.y);
+     ret.z = random(min.z, max.z);
+     
+     return ret;
+   }
+}

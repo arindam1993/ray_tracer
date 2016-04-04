@@ -45,6 +45,8 @@ public class DiffuseMaterial implements Material{
     }
     
     RGB texColor = tex.getTexColor(intersectPt.x, intersectPt.y, intersectPt.z);
+    
+    if( DEBUG ) { println(texColor);};
     finalColor.add(ambientColor).dot(texColor);
     //clone().dot(l.getColor()));
     return finalColor;

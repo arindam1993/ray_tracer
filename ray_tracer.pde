@@ -332,6 +332,11 @@ void interpreter(String filename) {
       
       Texture nT= new MarbleTexture(new PVector(-0.707,0,0.707), new PVector(0,0,-4));
       currentMaterial.setTexture(nT);
+    }else if(token[0].equals("stone")){
+      
+      Texture nT= new StoneTexture(new PVector(-0.5,-1,-5), new PVector(0.5,1,-3), 100);
+      currentMaterial.setTexture(nT);
+      
     }else if (token[0].equals("write")) {
       // save the current image to a .png file
       if( lastObj != null ) scene.addObject(lastObj);
