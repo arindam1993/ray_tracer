@@ -58,6 +58,13 @@ public class RGB{
    return new RGB(this.r, this.g, this.b);
   }
   
+  public RGB negate(){
+    this.r = 1 - this.r;
+    this.g = 1 - this.g;
+    this.b = 1 - this.b;
+    return this;
+  }
+  
   public int getPColor(){
     return color(r, g, b );
   }

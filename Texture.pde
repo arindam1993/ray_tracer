@@ -103,7 +103,7 @@ public class MarbleTexture implements Texture{
    dist+=noise(dist*5);
    
     float t = (sin(dist*(15*PI + noise(dist) ))+1.0f)*0.5f;
-    print(t + " ");
+//print(t + " ");
     
     return marbleHigh.clone().mult(t);
   }
@@ -134,7 +134,7 @@ public class StoneTexture implements Texture{
     this.numStones = stones;
     
     
-    this.filler = new RGB(0.8,0.8,0.8);
+    this.filler = new RGB(1,1,1);
     this.tileMain =  new RGB( 255.0f/255.0f,51.0f/255.0f,0.0f/255.0f);
     this.tileDust =  new RGB( 102.0f/255.0f,51.0f/255.0f,0.0f/255.0f);
   }
@@ -167,7 +167,7 @@ public class StoneTexture implements Texture{
      }
      
      if( abs(min -min2) < 0.01) return getFillerColor(pt);
-     
+     if( abs(min -min2) > 0.01 && abs(min -min2) < 0.02) return tileDust;
      return getTileColor(pt);
    }
    
@@ -177,8 +177,8 @@ public class StoneTexture implements Texture{
    }
    
    private RGB getFillerColor(PVector pt){
-     float noise = (noise_3d(pt.x * 35, pt.y* 35 , pt.z *35) + 1)/2 + 0.3f ;
-     return filler.clone().mult(noise);
+     float noise = (noise_3d(pt.x * 45, pt.y* 45 , pt.z *45) + 1)/2 + 0.1f ;
+     return filler.clone().mult(1 - noise ).dot(tileDust).add(new RGB(0.1,0.1,0.1));
    }
    
    private PVector getRandomPoint(){

@@ -337,7 +337,45 @@ void interpreter(String filename) {
       Texture nT= new StoneTexture(new PVector(-0.5,-1,-5), new PVector(0.5,1,-3), 100);
       currentMaterial.setTexture(nT);
       
-    }else if (token[0].equals("write")) {
+    }else if ( token[0].equals("reflective")){
+      float dr = float(token[1]);
+      float dg = float(token[2]);
+      float db = float(token[3]);
+      
+      float ar = float(token[4]);
+      float ag = float(token[5]);
+      float ab = float(token[6]);
+      
+      
+      float exp = 0.0f;
+      float kRefl = float(token[7]);
+      float kTrans = 0.0f;
+      float rIndex = 0.0f;
+      
+      currentMaterial = new SpecularMaterial(
+          new RGB(dr,dg,db),
+          new RGB(ar,ag,ab),
+          new RGB(0,0,0),
+          exp,
+          kRefl,
+          kTrans,
+          rIndex
+        );
+      
+    }else if (token[0].equals("hollow_cylinder")){
+      float radius = float(token[1]);
+      float x = float(token[2]);
+      float z = float(token[3]);
+      
+      float yMin = float(token[4]);
+      float yMax = float(token[5]);
+      
+      SceneObject cylinder = new OpenCylinder(radius,x,z,yMin,yMax);
+      cylinder.setMaterial(currentMaterial);
+      cylinder.initBBox();
+      scene.addObject(cylinder);
+    }
+    else if (token[0].equals("write")) {
       // save the current image to a .png file
       if( lastObj != null ) scene.addObject(lastObj);
       if(!filename.equals("rect_test.cli")) scene.render();

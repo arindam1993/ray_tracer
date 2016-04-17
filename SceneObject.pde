@@ -23,7 +23,163 @@ public interface SceneObject{
   
   
 }
+public class OpenCylinder implements SceneObject{
+  
+  float x;
+  float z;
+  float radius;
+  float yMin;
+  float yMax;
+  
+  Material mat;
+  
+  PVector _min;
+  PVector _max;
+  PVector axis;
+  PVector pa;
+  boolean backHit = false;
+  
+  public OpenCylinder(float radius, float x, float z, float yMin, float yMax){
+    this.radius = radius;
+    this.x =x;
+    this.z = z;
+    this.yMin = yMin;
+    this.yMax = yMax;
+    
+    this.axis = new PVector(0,1,0);
+    pa = new PVector(x,0,z);
+  }
+  
+  public float intersectRay(Ray ray, PVector result, boolean DEBUG, boolean isShadowRay){
+    //PVector c = pa;
+    backHit = false;
+    PVector v = ray.direction.copy().normalize();
+    PVector va = axis;
+    PVector p = ray.origin.copy();
 
+    PVector dPa = PVector.sub(p, pa);
+    float vva = v.dot(va);
+    float dPaVa = dPa.dot(va);
+    
+    PVector aVec = PVector.sub(v, va.copy().mult(vva));
+    PVector bVec = PVector.sub(dPa, va.copy().mult(dPaVa));
+    float a = aVec.dot(aVec);
+    float b = 2* aVec.dot(bVec);
+    float c = bVec.dot(bVec) - radius*radius;
+    
+    float d = b*b - 4*a*c;
+    if ( d < 0 ) { return MISSED; }
+    
+    
+    float t1 = (-b - sqrt(d))/(2*a);
+    float t = t1;
+    
+    float t2 = (-b + sqrt(d))/(2*a);
+    if (t2 < t1 ) t = t1;
+    result.set(p.x + v.x * t, p.y + v.y * t, p.z + v.z * t);
+    
+    if(DEBUG ) {println("t : " + t);};
+    
+    if( result . y > yMax || result.y < yMin){ 
+      
+      //if backside hit is below in range
+      float t2Y = p.y + v.y * t2;
+      if ( t2Y < yMax && t2Y>yMin){
+        result.y = t2Y;
+        t = t2;
+        backHit = true;
+      }else{
+        return MISSED;
+      }
+    
+    }
+    result.set(p.x + v.x * t, p.y + v.y * t, p.z + v.z * t);
+    if(DEBUG){
+      if(isShadowRay) println("In shadow");
+    }
+    return t;
+    
+    
+    
+    
+  }
+  public float getRayColor(RGB retColor, Ray ray, Scene scene, PVector retIntersectPt, boolean DEBUG, boolean isShadowRay){
+   PVector intersectPt = new PVector(0,0,0);
+    float tVal = this.intersectRay(ray, intersectPt, DEBUG, isShadowRay);
+    if(DEBUG && isShadowRay && tVal!=MISSED){
+      println("tVal: "+tVal);
+    }
+    if( tVal != MISSED){
+      PVector surfNormal = this.getSurfaceNormalAtPt(intersectPt);
+      
+      //Make polygons double sided
+      /*if( surfNormal.dot(intersectPt) > 0) {
+        if(DEBUG) println("FLIPPED");
+        surfNormal.mult(-1);
+      }*/
+      
+      if(!isShadowRay){
+        retColor.copyTo(this.mat.getRenderColor(intersectPt, surfNormal, scene, ray, this, DEBUG));
+      }
+      
+      retIntersectPt.set(intersectPt.x, intersectPt.y, intersectPt.z);
+     //print("Hit and color " + intersectPt);
+      
+      return tVal;
+    }else{
+    retColor.copyTo(scene.getBackground());
+    return tVal;
+    }
+  }
+  
+  public PVector getPosition(){
+    return new PVector(z, (yMin + yMax)/2, z);
+  }
+
+  
+  public Material getMaterial(){
+    return mat;
+  }
+  public void setMaterial(Material mat){
+    this.mat = mat;
+  }
+  
+  public PVector getSurfaceNormalAtPt(PVector pt){
+    PVector ptCpy = pt.copy();
+    ptCpy.y = 0;
+    
+    ptCpy.sub(pa).normalize();
+    
+    //If point on rear face
+    if( backHit) ptCpy.mult(-1);
+    
+    return ptCpy;
+  }
+  
+  public Ray getRefractedRay(Ray incidentRay){
+   return incidentRay;
+  }
+  
+  public PVector getBBoxMin(){
+    return _min;
+  }
+  
+  public PVector getBBoxMax(){
+    return _max;
+  }
+  
+  public void initBBox(){
+    _min = new PVector(x - radius, yMin, z-radius);
+    _max = new PVector(x + radius, yMax, z + radius);
+  }
+  
+  public void transform(PMatrix3D t){
+  }
+  
+  public String toString(){
+    return "OpenCylinder : { x:" + x + ", z:"+z+", radius:"+radius+ ", yMin:"+yMin+", yMax:"+yMax+" }";
+  }
+}
 
 public class ListObject implements SceneObject{
 
