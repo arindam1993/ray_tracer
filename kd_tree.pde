@@ -5,16 +5,34 @@ import java.util.*;   // need this to use priority queues
 int sort_axis;  // for building the kD-tree
 
 // Photon class
-public class Photon implements Comparable<Photon>{
+public class Photon extends Ray implements Comparable<Photon>{
   float[] pos;  // 3D position of photon, plus one extra value for nearest neighbor queries
-  // YOU WILL WANT TO MODIFY THIS CLASS TO RECORD THE POWER OF A PHOTON
+  RGB power;// YOU WILL WANT TO MODIFY THIS CLASS TO RECORD THE POWER OF A PHOTON
   
-  Photon (float x, float y, float z) {
+  Photon (float x, float y, float z, float xd, float yd, float zd, RGB power) {
+    super(new PVector(x,y,z), new PVector(xd,yd,zd));
     pos = new float[4];  // x,y,z position, plus fourth value that is used for nearest neighbor queries
     pos[0] = x;
     pos[1] = y;
     pos[2] = z;
     pos[3] = 0;  // distance squared, used for nearby photon queries
+    
+    this.power = power;
+  }
+  
+  public void setPos(PVector posi){
+    this.origin = posi;
+    this.pos[0]= posi.x;
+    this.pos[1]= posi.y;
+    this.pos[2]= posi.z;
+  }
+  
+  public void setPower(RGB power){
+    this.power = power;
+  }
+  
+  public RGB getPower(){
+    return this.power;
   }
 
   // Compare two nodes, used in two different circumstances:
@@ -28,6 +46,11 @@ public class Photon implements Comparable<Photon>{
     else
       return (0);
   }
+  
+  public String toString(){
+    return "{ x:"+ pos[0] +" y:"+ pos[1] +" z:"+ pos[2] +" power:"+ power +" }";
+  }
+  
 }
 
 // One node of a kD-tree
@@ -56,6 +79,7 @@ class kd_tree {
  // Build the kd-tree.  Should only be called after all of the
  // photons have been added to the initial list of photons.
  void build_tree() {
+   //println("calling build_tree() with "+ photon_list);
    root = build_tree (photon_list);
  }
  

@@ -6,6 +6,7 @@ public interface Material{
   
   public void setTexture(Texture t);
   public Texture getTexture();
+  public Material clone();
 }
 
 
@@ -15,12 +16,15 @@ public class DiffuseMaterial implements Material{
   RGB ambientColor;
   
   Texture tex;
+  public PhotonMap causticMap;
+  PhotonMap giMap;
   
   public DiffuseMaterial(RGB diffuseColor, RGB ambientColor){
     this.diffuseColor = diffuseColor;
     this.ambientColor = ambientColor;
     
     tex = new NoTexture();
+    causticMap = new PhotonMap();
   }
   
   public RGB getRenderColor(PVector intersectPt, PVector surfaceNormal, Scene scene, Ray ray, SceneObject obj, boolean DEBUG){
@@ -46,6 +50,22 @@ public class DiffuseMaterial implements Material{
     
     RGB texColor = tex.getTexColor(intersectPt.x, intersectPt.y, intersectPt.z);
     
+     
+    
+    /*PhotonRadiance rad = causticMap.getCausticRadiance(intersectPt);
+    if( rad!=null){
+      float radFac = surfaceNormal.dot(rad.direction);
+      if( radFac < 0 ) radFac = 0;
+      if( DEBUG ){ 
+        println("radiance Power " + rad.power);
+        println("Radiance Factorr " + radFac);
+      }
+      RGB radColor = diffuseColor.clone().dot(rad.power.clone().mult(10000)).mult(radFac);
+      finalColor.add(radColor);
+    }*/
+    
+    RGB causticColor = causticMap.getCausticColor(intersectPt,surfaceNormal,diffuseColor);
+    finalColor.add(causticColor);
     if( DEBUG ) { println(texColor);};
     finalColor.add(ambientColor).dot(texColor);
     //clone().dot(l.getColor()));
@@ -64,6 +84,10 @@ public class DiffuseMaterial implements Material{
     return tex;
   }
   
+  public Material clone(){
+    return new DiffuseMaterial(diffuseColor, ambientColor);
+  }
+  
   public String toString(){
     return "DiffuseMaterial: { diffuseColor:"+this.diffuseColor+", ambientColor:"+this.ambientColor+"}";
   }
@@ -73,6 +97,8 @@ public class DiffuseMaterial implements Material{
 public class SpecularMaterial implements Material {
   
   DiffuseMaterial baseMat;
+  RGB diffColor;
+  RGB ambColor;
   RGB specColor;
   float specExp;
   float kRefl;
@@ -81,6 +107,8 @@ public class SpecularMaterial implements Material {
   Texture tex;
   
   public SpecularMaterial(RGB diffuseColor, RGB ambientColor, RGB specColor, float specExp, float kRefl, float kTrans, float rIndex){
+    diffColor =diffuseColor;
+    ambColor = ambientColor;
     this.baseMat = new DiffuseMaterial(diffuseColor, ambientColor);
     this.specColor = specColor;
     this.specExp = specExp;
@@ -120,6 +148,7 @@ public class SpecularMaterial implements Material {
     //return diffuseComp.add(specComp);
     RGB texColor = tex.getTexColor(intersectPt.x, intersectPt.y, intersectPt.z);
     
+    
     return diffuseComp.add(specComp).dot(texColor);
   }
   
@@ -150,6 +179,10 @@ public class SpecularMaterial implements Material {
   public String toString(){
       return "DiffuseComponent : " + this.baseMat + " SpecColor :  " + this.specColor + " Exp : " + this.specExp + " KRefl : " + kRefl + " KTrans : " + kTrans + " RIndex : " + rIndex;
   
+  }
+  
+  public Material clone(){
+    return new SpecularMaterial(diffColor, ambColor, specColor, specExp, kRefl, kTrans, rIndex);
   }
 
 }

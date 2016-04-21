@@ -56,6 +56,12 @@ void keyPressed() {
   currentPolygon = new Polygon();
   initZbuffer();
   if (scene != null ) scene.clear();
+  
+   photon_radius = 8;
+
+   NUM_CAUSTIC_PHOTONS_CAST = 0;
+   NUM_CAUSTIC_PHOTONS_NEAR = 0;
+   CAUSTIC_PHOTON_RADIUS = 0.0f;
   matStack = new MatrixStack();
   
   switch(key) {
@@ -199,7 +205,7 @@ void interpreter(String filename) {
       ((Polygon)(currentPolygon)).addVertex(new PVector(x,y,z));
     }else if( token[0].equals("end") ){
     
-      currentPolygon.setMaterial(currentMaterial);
+      currentPolygon.setMaterial(currentMaterial.clone());
       
       currentPolygon.transform(matStack.top());
       
@@ -278,7 +284,7 @@ void interpreter(String filename) {
       
       SceneObject box = new BoundingBox(xMin,yMin,zMin, xMax, yMax, zMax);
       box.transform(matStack.top());
-      box.setMaterial(currentMaterial);
+      box.setMaterial(currentMaterial.clone());
       _handleInstaceAdd(box);
       
     }else if(token[0].equals("named_object")){
@@ -371,7 +377,7 @@ void interpreter(String filename) {
       float yMax = float(token[5]);
       
       SceneObject cylinder = new OpenCylinder(radius,x,z,yMin,yMax);
-      cylinder.setMaterial(currentMaterial);
+      cylinder.setMaterial(currentMaterial.clone());
       cylinder.initBBox();
       scene.addObject(cylinder);
     }
@@ -388,8 +394,11 @@ void interpreter(String filename) {
       int diff = new_timer - timer;
       float seconds = diff / 1000.0;
       println ("timer = " + seconds);
+    }else if( token[0].equals("caustic_photons")){
+      NUM_CAUSTIC_PHOTONS_CAST = int(token[1]);
+      NUM_CAUSTIC_PHOTONS_NEAR = int(token[2]);
+      CAUSTIC_PHOTON_RADIUS = float(token[3]);
     }
-
   }
 }
 

@@ -2,8 +2,178 @@
 //
 // Greg Turk, April 2016
 
+
+public class PhotonRadiance{
+   
+  public RGB power;
+  public PVector direction;
+  
+  public PhotonRadiance(RGB power, PVector direction){
+    this.power = power;
+    this.direction = direction;
+  }
+}
+
 float photon_radius = 8;
+
+int NUM_CAUSTIC_PHOTONS_CAST = 0;
+int NUM_CAUSTIC_PHOTONS_NEAR = 0;
+float CAUSTIC_PHOTON_RADIUS = 0.0f;
+class PhotonMap{
+ 
+  kd_tree tree;
+  public int numPhotons;
+  
+  ArrayList<Photon> queryCache;
+  public PhotonMap(){
+    this.tree = new kd_tree();
+    this.numPhotons=0;
+  }
+  
+  public void addPhoton(Photon p){
+    this.numPhotons++;
+   // println("Added : " + p +"   ");
+    this.tree.add_photon(p);
+  }
+  
+  public void buildMap(){
+    println("NUMBER OF PHOTONS STORED :" +this.numPhotons); //<>//
+    if(numPhotons > 0){
+      tree.build_tree();
+    }
+  }
+  
+  public PhotonRadiance getCausticRadiance(PVector pos){
+    if (!hasCausticPhotons(pos)) return null;
+    PhotonRadiance res = new PhotonRadiance(new RGB(0,0,0), new PVector(0,0,0));
+      //print("num photons in range" + photons.size());
+    for(Photon p:queryCache){
+          res.power.add(p.getPower());
+          res.direction.add(p.direction.copy().mult(-1));
+    }
+    
+    res.direction.normalize();
+    return res;
+  }
+  
+  public RGB getCausticColor(PVector pos, PVector surfaceNormal, RGB diffuseColor){
+    if (!hasCausticPhotons(pos)) return new RGB(0,0,0);
+    //print(queryCache.size() + " ");
+    RGB finalColor = new RGB(0,0,0);
+    for(Photon p:queryCache){
+      float radFac = surfaceNormal.dot(p.direction.copy().mult(-1));
+      if( radFac < 0 ) radFac = 0;
+      
+      float coneFilterWeight = (CAUSTIC_PHOTON_RADIUS -  pos.dist(p.origin))/(CAUSTIC_PHOTON_RADIUS) ;
+      float boost = float(NUM_CAUSTIC_PHOTONS_CAST)/(100.0f );
+      
+      RGB radColor = diffuseColor.clone().dot(p.power.clone().mult(coneFilterWeight*boost/(PI * CAUSTIC_PHOTON_RADIUS*CAUSTIC_PHOTON_RADIUS))).mult(radFac);
+      //radColor.dot(radColor).mult(100000);
+      finalColor.add(radColor);
+    }
+    finalColor.mult(1/float(queryCache.size()));
+    return finalColor;
+  }
+  
+  public boolean hasCausticPhotons(PVector pos){
+    
+    if( numPhotons == 0) return false;
+    queryCache = tree.find_near(pos.x,pos.y,pos.z,NUM_CAUSTIC_PHOTONS_NEAR,CAUSTIC_PHOTON_RADIUS);
+    
+    if( queryCache.size() == 0) return false;
+    if( queryCache.size() > 0){
+      if( queryCache.get(0) == null) return false;
+    }
+    
+    return true;
+  }
+ 
+}
+
+
+public void BuildCausticPhotonMap(){
+  PVector randomDirection = new PVector(0,0,0);
+
+   if(NUM_CAUSTIC_PHOTONS_CAST > 0){
+    for(Light l: scene.getLights()){
+      RGB powerPerPhoton = l.getColor().clone().mult(1/float(NUM_CAUSTIC_PHOTONS_CAST));
+      for( int i =0; i< NUM_CAUSTIC_PHOTONS_CAST;i++){
+        randomDirection.set(random(1.0f) - 0.5f, random(1.0f) - 0.5f , random(1.0f) - 0.5f );
+        randomDirection.normalize();
+        
+        PVector pos = l.getPosition();      
+        Photon p = new Photon(pos.x, pos.y,pos.z, randomDirection.x, randomDirection.y, randomDirection.z, powerPerPhoton);
+        
+        CausticPhotonTrace(p,null, 0);
+      }
+
+    }
+   ArrayList<SceneObject> s = scene.getSceneObjects();
+    for( SceneObject obj:s){
+      Material m = (obj.getMaterial());
+      if( m instanceof DiffuseMaterial){
+        PhotonMap pM = ((DiffuseMaterial)(m)).causticMap;
+        pM.buildMap();
+      }
+    }
+ }
+}
+
+public void CausticPhotonTrace(Photon p, SceneObject ignoreObj, int reflCount){
+  ArrayList<SceneObject> s = scene.getSceneObjects();
+  PVector intersectPt = new PVector();
+  float minDist = 999999.0f;
+  PVector closestPt = new PVector(0,0,0);
+  SceneObject hitObj = null;
+  for( SceneObject obj:s){
+
+    float t = obj.intersectRay(p, intersectPt, false, true);
+      
+    if( t!= MISSED){
+      if( obj !=ignoreObj ){
+        
+        if(t < minDist){
+          minDist = t;
+          hitObj = obj;
+          closestPt = intersectPt;
+        }
+        
+      }
+    }
+  }
+  
+  if( hitObj == null ) return;
+  hitObj.intersectRay(p, closestPt, false, true);
+  Material m = hitObj.getMaterial();
+      
+  if( m instanceof SpecularMaterial){
+
+      
+       // print("Photon reflected");
+        PVector normal = hitObj.getSurfaceNormalAtPt(closestPt);
+        Photon reflected = (Photon)(p.reflect(normal, closestPt));
+        reflCount++;
+        
+        CausticPhotonTrace(reflected,hitObj, reflCount);
+      
+    
+  
+  }else {
+    //Unless Direct Hit fron light
+    if ( reflCount > 0){
+      DiffuseMaterial mD = (DiffuseMaterial)(m);
+      p.setPos(closestPt);
+      //print("storing Photon at "+closestPt + " on " + hitObj);
+      mD.causticMap.addPhoton(p);
+      //print("storing photon");
+    }
+  }
+}
+
 /*
+
+
+
 int screen_width = 850;
 int screen_height = 850;
 
