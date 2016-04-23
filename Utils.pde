@@ -170,19 +170,19 @@ public void getRadialSamplesInPlane(int numSamples,PVector center, PVector norma
 
 public RGB _unUsdRGB = new RGB(0,0,0);
 
-public RGB isShadow(PVector intersectPt, PVector toLight, Scene scene, SceneObject currObj, boolean DEBUG){
+public RGB isShadow(PVector intersectPt, PVector toLight, PVector lightPos, Scene scene, SceneObject currObj, boolean DEBUG){
 
   Ray ray = new Ray(intersectPt, toLight.copy().normalize());
   if(DEBUG)
-   println("Shadow Ray: " + ray );
-   
+   println("Shadow Ray: " + ray +" light vec: " + toLight);
+   float distToLight = intersectPt.dist(lightPos);
   for( SceneObject obj : scene.getSceneObjects()){
     if( obj != currObj){
       PVector res = new PVector(0,0,0);
-      float depth = obj.getRayColor(_unUsdRGB, ray,scene, res, DEBUG, true);
-      if ( depth != MISSED){
+      float depth = obj.intersectRay(ray, res, DEBUG, true);
+      if ( depth != MISSED && depth < distToLight){
         if ( DEBUG ){
-          println("Shadow Ray hit: "+obj);
+          println("Shadow Ray hit: "+obj + " at " + res);
          
         }
         return new RGB(0,0,0);

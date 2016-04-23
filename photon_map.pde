@@ -37,7 +37,7 @@ class PhotonMap{
   }
   
   public void buildMap(){
-    println("NUMBER OF PHOTONS STORED :" +this.numPhotons); //<>//
+    println("NUMBER OF PHOTONS STORED :" +this.numPhotons); //<>// //<>//
     if(numPhotons > 0){
       tree.build_tree();
     }
@@ -56,22 +56,22 @@ class PhotonMap{
     return res;
   }
   
-  public RGB getCausticColor(PVector pos, PVector surfaceNormal, RGB diffuseColor){
+  public RGB getCausticColor(PVector pos, PVector surfaceNormal, RGB diffuseColor, boolean DEBUG){
     if (!hasCausticPhotons(pos)) return new RGB(0,0,0);
-    //print(queryCache.size() + " ");
+    if( DEBUG) print("Number of photons: "+ queryCache.size() + " ");
     RGB finalColor = new RGB(0,0,0);
     for(Photon p:queryCache){
       float radFac = surfaceNormal.dot(p.direction.copy().mult(-1));
       if( radFac < 0 ) radFac = 0;
       
       float coneFilterWeight = (CAUSTIC_PHOTON_RADIUS -  pos.dist(p.origin))/(CAUSTIC_PHOTON_RADIUS) ;
-      float boost = float(NUM_CAUSTIC_PHOTONS_CAST)/(100.0f );
+      float boost = float(400 );
       
       RGB radColor = diffuseColor.clone().dot(p.power.clone().mult(coneFilterWeight*boost/(PI * CAUSTIC_PHOTON_RADIUS*CAUSTIC_PHOTON_RADIUS))).mult(radFac);
       //radColor.dot(radColor).mult(100000);
       finalColor.add(radColor);
     }
-    finalColor.mult(1/float(queryCache.size()));
+    //finalColor.mult(1/float(queryCache.size()));
     return finalColor;
   }
   

@@ -2,7 +2,7 @@
 
 fov 60
 
-caustic_photons 80000000  80 0.05
+caustic_photons 80000000  200000 0.01
 
 # blue background
 

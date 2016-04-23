@@ -45,7 +45,9 @@ public class DiffuseMaterial implements Material{
      l.getShadowColor(currColor,intersectPt,scene,obj,DEBUG);
      finalColor.add(currColor);
      
-     
+     if( DEBUG ) {
+       //println( "Normal:" + surfaceNormal+ ", factor:"+ factor + " color:" + finalColor);
+     }
     }
     
     RGB texColor = tex.getTexColor(intersectPt.x, intersectPt.y, intersectPt.z);
@@ -64,7 +66,7 @@ public class DiffuseMaterial implements Material{
       finalColor.add(radColor);
     }*/
     
-    RGB causticColor = causticMap.getCausticColor(intersectPt,surfaceNormal,diffuseColor);
+    RGB causticColor = causticMap.getCausticColor(intersectPt,surfaceNormal,diffuseColor,DEBUG);
     finalColor.add(causticColor);
     if( DEBUG ) { println(texColor);};
     finalColor.add(ambientColor).dot(texColor);
@@ -133,7 +135,7 @@ public class SpecularMaterial implements Material {
      
       specComp.add(specColor.clone().mult(factor));
       
-      specComp.dot(isShadow(intersectPt, toLight, scene, obj, DEBUG));
+      specComp.dot(isShadow(intersectPt, toLight,l.getPosition(), scene, obj, DEBUG));
     }
  
     

@@ -29,7 +29,10 @@ public class PointLight implements Light{
   
   public void getShadowColor(RGB nonShadowColor, PVector intersectPt,Scene scene, SceneObject obj, boolean DEBUG){
     PVector toLight = PVector.sub(this.getPosition(), intersectPt).normalize();
-    RGB shadowResult = isShadow(intersectPt, toLight, scene, obj, DEBUG);
+    RGB shadowResult = isShadow(intersectPt, toLight,this.getPosition(), scene, obj, DEBUG);
+    if( DEBUG) {
+      //println("shdowResult: "+shadowResult);
+    }
     nonShadowColor.dot(shadowResult);
   }
   
@@ -71,7 +74,7 @@ public class DiscLight implements Light{
     RGB avgShadow = new RGB(0,0,0);
     for ( PVector sample : samplePoints ){
       PVector toLight = PVector.sub(sample, intersectPt).normalize();
-      avgShadow.add(isShadow(intersectPt, toLight, scene, obj, DEBUG));
+      avgShadow.add(isShadow(intersectPt, toLight,this.getPosition(), scene, obj, DEBUG));
       
     }
     
